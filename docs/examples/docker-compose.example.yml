@@ -1,11 +1,11 @@
 services:
-    cobalt:
-        image: ghcr.io/imputnet/cobalt:11
+    kibelt:
+        image: ghcr.io/kibelt/kibelt:latest
 
         init: true
         read_only: true
         restart: unless-stopped
-        container_name: cobalt
+        container_name: kibelt
 
         ports:
             - 9000:9000/tcp
@@ -28,17 +28,17 @@ services:
             # see /docs/run-an-instance.md for more variables that you can use here
 
         labels:
-            - com.centurylinklabs.watchtower.scope=cobalt
+            - com.centurylinklabs.watchtower.scope=kibelt
 
         # uncomment only if you use the COOKIE_PATH variable
         # volumes:
             # - ./cookies.json:/cookies.json
 
-    # watchtower updates the cobalt image automatically
+    # watchtower updates the Kibelt image automatically
     watchtower:
         image: ghcr.io/containrrr/watchtower
         restart: unless-stopped
-        command: --cleanup --scope cobalt --interval 900 --include-restarting
+        command: --cleanup --scope kibelt --interval 900 --include-restarting
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
 
@@ -50,4 +50,4 @@ services:
     #     restart: unless-stopped
     #     container_name: yt-session-generator
     #     labels:
-    #       - com.centurylinklabs.watchtower.scope=cobalt
+    #       - com.centurylinklabs.watchtower.scope=kibelt

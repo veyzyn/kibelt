@@ -2,7 +2,7 @@ import cors from "cors";
 import http from "node:http";
 import rateLimit from "express-rate-limit";
 import { setGlobalDispatcher, EnvHttpProxyAgent } from "undici";
-import { getCommit, getBranch, getRemote, getVersion } from "@imput/version-info";
+import { getCommit, getBranch, getRemote, getVersion } from "@kibelt/version-info";
 
 import jwt from "../security/jwt.js";
 import stream from "../stream/stream.js";
@@ -50,7 +50,7 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
 
     const getServerInfo = () => {
         return JSON.stringify({
-            cobalt: {
+            kibelt: {
                 version: version,
                 url: env.apiURL,
                 startTime: `${startTimestamp}`,
@@ -356,7 +356,7 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
     }, () => {
         if (isPrimary) {
             console.log(`\n` +
-                Bright(Cyan("cobalt ")) + Bright("API ^ω^") + "\n" +
+                Bright(Cyan("Kibelt ")) + Bright("API ^ω^") + "\n" +
 
                 "~~~~~~\n" +
                 Bright("version: ") + version + "\n" +

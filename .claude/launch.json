@@ -1,0 +1,26 @@
+{
+    "version": "0.0.1",
+    "configurations": [
+        {
+            "name": "kibelt-dev",
+            "runtimeExecutable": "node",
+            "runtimeArgs": ["scripts/dev.mjs"],
+            "port": 5273
+        },
+        {
+            "name": "kibelt-frontend",
+            "runtimeExecutable": "corepack",
+            "runtimeArgs": [
+                "pnpm",
+                "--filter",
+                "@kibelt/frontend",
+                "exec",
+                "vite",
+                "--port",
+                "5273",
+                "--strictPort"
+            ],
+            "port": 5273
+        }
+    ]
+}

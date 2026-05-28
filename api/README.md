@@ -1,13 +1,13 @@
-# cobalt api
-this directory includes the source code for cobalt api. it's made with [express.js](https://www.npmjs.com/package/express) and love!
+# Kibelt API
+this directory includes the source code for Kibelt API. it's made with [express.js](https://www.npmjs.com/package/express) and love!
 
 ## running your own instance
 if you want to run your own instance for whatever purpose, [follow this guide](/docs/run-an-instance.md).
-we recommend to use docker compose unless you intend to run cobalt for developing/debugging purposes.
+we recommend to use docker compose unless you intend to run Kibelt for developing/debugging purposes.
 
 ## accessing the api
 there is currently no publicly available pre-hosted api.
-we recommend [deploying your own instance](/docs/run-an-instance.md) if you wish to use the cobalt api.
+we recommend [deploying your own instance](/docs/run-an-instance.md) if you wish to use the Kibelt API.
 
 you can read [the api documentation here](/docs/api.md).
 
@@ -61,7 +61,7 @@ if the desired service isn't supported yet, feel free to create an appropriate i
 | youtube    | supports videos, music, and shorts. 8K, 4K, HDR, VR, and high FPS videos. rich metadata & dubs. h264/av1/vp9 codecs. |
 
 ## license
-cobalt api code is licensed under [AGPL-3.0](LICENSE).
+Kibelt API code is licensed under [AGPL-3.0](LICENSE).
 
 this license allows you to modify, distribute and use the code for any purpose
 as long as you:
@@ -71,29 +71,29 @@ as long as you:
 
 ## open source acknowledgements
 ### ffmpeg
-cobalt relies on ffmpeg for muxing and encoding media files. ffmpeg is absolutely spectacular and we're privileged to have the ability to use it for free, just like anyone else. we believe it should be way more recognized.
+Kibelt relies on ffmpeg for muxing and encoding media files. ffmpeg is absolutely spectacular and we're privileged to have the ability to use it for free, just like anyone else. we believe it should be way more recognized.
 
 you can [support ffmpeg here](https://ffmpeg.org/donations.html)!
 
 ### youtube.js
-cobalt relies on **[youtube.js](https://github.com/LuanRT/YouTube.js)** for interacting with youtube's innertube api, it wouldn't have been possible without this package.
+Kibelt relies on **[youtube.js](https://github.com/LuanRT/YouTube.js)** for interacting with youtube's innertube api, it wouldn't have been possible without this package.
 
 you can support the developer via various methods listed on their github page!
 (linked above)
 
 ### many others
-cobalt-api also depends on:
+Kibelt API also depends on:
 
 - **[content-disposition-header](https://www.npmjs.com/package/content-disposition-header)** to simplify the provision of `content-disposition` headers.
 - **[cors](https://www.npmjs.com/package/cors)** to manage cross-origin resource sharing within expressjs.
 - **[dotenv](https://www.npmjs.com/package/dotenv)** to load environment variables from the `.env` file.
-- **[express](https://www.npmjs.com/package/express)** as the backbone of cobalt servers.
+- **[express](https://www.npmjs.com/package/express)** as the backbone of Kibelt servers.
 - **[express-rate-limit](https://www.npmjs.com/package/express-rate-limit)** to rate limit api endpoints.
 - **[ffmpeg-static](https://www.npmjs.com/package/ffmpeg-static)** to get binaries for ffmpeg depending on the platform.
 - **[hls-parser](https://www.npmjs.com/package/hls-parser)** to parse HLS playlists according to spec (very impressive stuff).
 - **[ipaddr.js](https://www.npmjs.com/package/ipaddr.js)** to parse ip addresses (used for rate limiting).
 - **[nanoid](https://www.npmjs.com/package/nanoid)** to generate unique identifiers for each requested tunnel.
-- **[set-cookie-parser](https://www.npmjs.com/package/set-cookie-parser)** to parse cookies that cobalt receives from certain services.
+- **[set-cookie-parser](https://www.npmjs.com/package/set-cookie-parser)** to parse cookies that Kibelt receives from certain services.
 - **[undici](https://www.npmjs.com/package/undici)** for making http requests.
 - **[url-pattern](https://www.npmjs.com/package/url-pattern)** to match provided links with supported patterns.
 - **[zod](https://www.npmjs.com/package/zod)** to lock down the api request schema.

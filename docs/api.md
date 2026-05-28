@@ -1,8 +1,8 @@
-# cobalt api documentation
-methods, acceptable values, headers, responses and everything else related to making and parsing requests from a cobalt api instance.
+# Kibelt API documentation
+methods, acceptable values, headers, responses and everything else related to making and parsing requests from a Kibelt API instance.
 
 > [!IMPORTANT]
-> hosted api instances (such as `api.cobalt.tools`) use bot protection and are **not** intended to be used in other projects without explicit permission. if you want to use the cobalt api, you should [host your own instance](/docs/run-an-instance.md) or ask an instance owner for access.
+> hosted upstream cobalt api instances are **not** intended to be used in other projects without explicit permission. if you want to use the Kibelt API, you should [host your own instance](/docs/run-an-instance.md).
 
 - [POST /](#post)
 - [POST /session](#post-session)
@@ -23,7 +23,7 @@ the authentication scheme and the token:
 Authorization: <scheme> <token>
 ```
 
-currently, cobalt supports two ways of authentication. an instance can
+currently, Kibelt supports API key authentication. an instance can
 choose to configure both, or neither:
 - [`Api-Key`](#api-key-authentication)
 - [`Bearer`](#bearer-authentication)
@@ -39,16 +39,16 @@ if you are an instance owner and wish to configure api key authentication,
 see the [instance](run-an-instance.md#api-key-file-format) documentation!
 
 ### bearer authentication
-the cobalt server may be configured to issue JWT bearers, which are short-lived
+the Kibelt server may be configured to issue JWT bearers, which are short-lived
 tokens intended for use by regular users (e.g. after passing a challenge).
-currently, cobalt can issue tokens for successfully solved [turnstile](run-an-instance.md#list-of-all-environment-variables)
+currently, Kibelt inherits upstream session token support; the open API path will remove the captcha dependency.
 challenge, if the instance has turnstile configured. the resulting token is passed like so:
 ```
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 ## POST `/`
-cobalt's main processing endpoint.
+Kibelt's main processing endpoint.
 
 > [!IMPORTANT]
 > you must include correct `Accept` and `Content-Type` headers with every `POST /` request.
@@ -97,9 +97,9 @@ all keys except for `url` are optional. value options are separated by `/`.
 body type: `application/json`
 
 the response will always be a JSON object containing the `status` key, which is one of:
-- `tunnel`: cobalt is proxying and/or remuxing/transcoding the file for you.
-- `local-processing`: cobalt is proxying the files for you, but you have to remux/transcode them locally.
-- `redirect`: cobalt will redirect you to the direct service URL.
+- `tunnel`: Kibelt is proxying and/or remuxing/transcoding the file for you.
+- `local-processing`: Kibelt is proxying the files for you, but you have to remux/transcode them locally.
+- `redirect`: Kibelt will redirect you to the direct service URL.
 - `picker`: there are multiple items to choose from, a picker should be shown.
 - `error`: something went wrong, here's an error code.
 
@@ -107,8 +107,8 @@ the response will always be a JSON object containing the `status` key, which is 
 | key          | type     | value                                                      |
 |:-------------|:---------|:-----------------------------------------------------------|
 | `status`     | `string` | `tunnel / redirect`                                        |
-| `url`        | `string` | url for the cobalt tunnel, or redirect to an external link |
-| `filename`   | `string` | cobalt-generated filename for the file being downloaded    |
+| `url`        | `string` | url for the Kibelt tunnel, or redirect to an external link |
+| `filename`   | `string` | Kibelt-generated filename for the file being downloaded    |
 
 ### local processing response
 | key          | type       | value                                                         |
@@ -159,7 +159,7 @@ all keys in this table are optional.
 |:----------------|:---------|:-----------------------------------------------------------------------------------------------|
 | `status`        | `string` | `picker`                                                                                       |
 | `audio`         | `string` | returned when an image slideshow (such as on tiktok) has a general background audio (optional) |
-| `audioFilename` | `string` | cobalt-generated filename, returned if `audio` exists (optional)                               |
+| `audioFilename` | `string` | Kibelt-generated filename, returned if `audio` exists (optional)                               |
 | `picker`        | `array`  | array of objects containing the individual media                                               |
 
 #### picker object
@@ -188,7 +188,7 @@ all keys in this table are optional.
 | `limit`      | `number` | the maximum downloadable video duration or the rate limit window (optional) |
 
 ## POST `/session`
-used for generating JWT tokens, if enabled. currently, cobalt only supports
+used for generating JWT tokens, if enabled. currently, Kibelt only supports
 generating tokens when a [turnstile](run-an-instance.md#list-of-all-environment-variables) challenge solution
 is submitted by the client.
 
@@ -210,13 +210,13 @@ body type: `application/json`
 
 | key         | type     | description                                              |
 |:------------|:---------|:---------------------------------------------------------|
-| `cobalt`    | `object` | information about the cobalt instance                    |
+| `kibelt`    | `object` | information about the Kibelt instance                    |
 | `git`       | `object` | information about the codebase that is currently running |
 
-#### cobalt object
+#### Kibelt object
 | key                | type       | description                                    |
 |:-------------------|:-----------|:-----------------------------------------------|
-| `version`          | `string`   | cobalt version                                 |
+| `version`          | `string`   | Kibelt version                                 |
 | `url`              | `string`   | instance url                                   |
 | `startTime`        | `string`   | instance start time in unix milliseconds       |
 | `turnstileSitekey` | `string`   | site key for a turnstile widget (optional)     |

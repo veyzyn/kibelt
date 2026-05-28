@@ -1,5 +1,5 @@
 import HLS from "hls-parser";
-import { cobaltUserAgent } from "../../config.js";
+import { kibeltUserAgent } from "../../config.js";
 import { createStream } from "../../stream/manage.js";
 
 const extractVideo = async ({ media, filename, dispatcher }) => {
@@ -98,7 +98,7 @@ export default async function ({ user, post, alwaysProxy, dispatcher }) {
 
     const getPost = await fetch(apiEndpoint, {
         headers: {
-            "user-agent": cobaltUserAgent,
+            "user-agent": kibeltUserAgent,
         },
         dispatcher
     }).then(r => r.json()).catch(() => {});

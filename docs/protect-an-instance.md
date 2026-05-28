@@ -1,13 +1,13 @@
-# how to protect your cobalt instance
+# how to protect your Kibelt instance
 if you keep getting a ton of unknown traffic that hurts the performance of your instance, then it might be a good idea to enable bot protection.
 
 > [!NOTE]
-> this tutorial will work reliably on the latest official version of cobalt 10.
+> this tutorial will work reliably on the latest official version of Kibelt.
 we can't promise full compatibility with anything else.
 
 ## configure cloudflare turnstile
 turnstile is a free, safe, and privacy-respecting alternative to captcha.
-cobalt uses it automatically to weed out bots and automated scripts.
+Kibelt uses it automatically to weed out bots and automated scripts.
 your instance doesn't have to be proxied by cloudflare to use turnstile.
 all you need is a free cloudflare account to get started.
 
@@ -32,15 +32,15 @@ cloudflare dashboard interface might change over time, but basics should stay th
     </p>
 </div>
 
-4. enter the widget name (can be anything, such as "cobalt")
+4. enter the widget name (can be anything, such as "Kibelt")
 <div align="left">
     <p>
         <img src="images/protect-an-instance/name.png" width="450" />
     </p>
 </div>
 
-5. add cobalt frontend domains you want the widget to work with, you can change this list later at any time
-    - if you want to use your processing instance with [cobalt.tools](https://cobalt.tools/) frontend, then add `cobalt.tools` to the list
+5. add Kibelt frontend domains you want the widget to work with, you can change this list later at any time
+    - if you want to use your processing instance with [kibelt.example](https://kibelt.example/) frontend, then add `kibelt.example` to the list
 <div align="left">
     <p>
         <img src="images/protect-an-instance/domain.png" width="450" />
@@ -166,7 +166,7 @@ type KeyFileContents = Record<
 ```
 
 where *`UUIDv4String`* is a stringified version of a UUIDv4 identifier.
-- **name** is a field for your own reference, it is not used by cobalt anywhere.
+- **name** is a field for your own reference, it is not used by Kibelt anywhere.
 
 - **`limit`** specifies how many requests the API key can make during the window specified in the `RATELIMIT_WINDOW` env.
     - when omitted, the limit specified in `RATELIMIT_MAX` will be used.
@@ -176,7 +176,7 @@ where *`UUIDv4String`* is a stringified version of a UUIDv4 identifier.
     - when specified, only requests from these ip ranges can use the specified api key.
     - when omitted, any IP can be used to make requests with that API key.
 
-- **`userAgents`** contains an array of allowed user agents, with support for wildcards (e.g. *`["cobaltbot/1.0", "Mozilla/5.0 * Chrome/*"]`*).
+- **`userAgents`** contains an array of allowed user agents, with support for wildcards (e.g. *`["kibeltbot/1.0", "Mozilla/5.0 * Chrome/*"]`*).
     - when specified, requests with a `user-agent` that does not appear in this array will be rejected.
     - when omitted, any user agent can be specified to make requests with that API key.
 
@@ -186,7 +186,7 @@ where *`UUIDv4String`* is a stringified version of a UUIDv4 identifier.
     - when omitted, the key will use the global list of supported services.
 
 - if both `ips` and `userAgents` are set, the tokens will be limited by both parameters.
-- if cobalt detects any problem with your key file, it will be ignored and a warning will be printed to the console.
+- if Kibelt detects any problem with your key file, it will be ignored and a warning will be printed to the console.
 
 an example key file could look like this:
 ```json
@@ -199,7 +199,7 @@ an example key file could look like this:
     "b00b1234-a3e5-99b1-c6d1-dba4512ae190": {
         "limit": "unlimited",
         "ips": ["192.168.1.2"],
-        "userAgents": ["cobaltbot/1.0"]
+        "userAgents": ["kibeltbot/1.0"]
     }
 }
 ```

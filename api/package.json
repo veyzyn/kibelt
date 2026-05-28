@@ -1,31 +1,31 @@
 {
-    "name": "@imput/cobalt-api",
+    "name": "@kibelt/api",
     "description": "save what you love",
     "version": "11.7.1",
     "author": "imput",
-    "exports": "./src/cobalt.js",
+    "exports": "./src/kibelt.js",
     "type": "module",
     "engines": {
         "node": ">=18.17"
     },
     "scripts": {
-        "start": "node src/cobalt",
+        "start": "node src/kibelt",
         "test": "node src/util/test",
         "token:jwt": "node src/util/generate-jwt-secret"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/imputnet/cobalt.git"
+        "url": "git+https://github.com/kibelt/kibelt.git"
     },
     "license": "AGPL-3.0",
     "bugs": {
-        "url": "https://github.com/imputnet/cobalt/issues"
+        "url": "https://github.com/kibelt/kibelt/issues"
     },
-    "homepage": "https://github.com/imputnet/cobalt#readme",
+    "homepage": "https://github.com/kibelt/kibelt#readme",
     "dependencies": {
         "@datastructures-js/priority-queue": "^6.3.5",
         "@imput/psl": "^2.0.4",
-        "@imput/version-info": "workspace:^",
+        "@kibelt/version-info": "workspace:^",
         "content-disposition-header": "0.6.0",
         "cors": "^2.8.5",
         "dotenv": "^17.2.3",

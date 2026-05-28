@@ -1,4 +1,4 @@
-# cobalt api instance environment variables
+# Kibelt API instance environment variables
 you can customize your processing instance's behavior using these environment variables. all of them but `API_URL` are optional.
 this document is not final and will expand over time. feel free to improve it!
 
@@ -89,7 +89,7 @@ port from which the API server will be accessible.
 the value is a number from 1024 to 65535.
 
 ### COOKIE_PATH
-path to the `cookies.json` file relative to the current working directory of your cobalt instance (usually the main (src/api) folder).
+path to the `cookies.json` file relative to the current working directory of your Kibelt instance (usually the main (src/api) folder).
 
 ### PROCESSING_PRIORITY
 `nice` value for ffmpeg subprocesses. available only on unix systems.
@@ -99,19 +99,19 @@ note: the higher the nice value, the lower the priority. you can [read more abou
 the value is a number.
 
 ### API_INSTANCE_COUNT
-supported only on linux and node.js `>=23.1.0`. when configured, cobalt will spawn multiple sub-instances amongst which requests will be balanced. `API_REDIS_URL` is required to use this option.
+supported only on linux and node.js `>=23.1.0`. when configured, Kibelt will spawn multiple sub-instances amongst which requests will be balanced. `API_REDIS_URL` is required to use this option.
 
 the value is a number.
 
 ### API_REDIS_URL
-when configured, cobalt will use this redis instance for tunnel cache. required when `API_INSTANCE_COUNT` is more than 1, because else sub-instance wouldn't be able to share cache.
+when configured, Kibelt will use this redis instance for tunnel cache. required when `API_INSTANCE_COUNT` is more than 1, because else sub-instance wouldn't be able to share cache.
 
 the value is a URL.
 
 ### DISABLED_SERVICES
 comma-separated list which disables certain services from being used.
 
-the value is a string of cobalt-supported services.
+the value is a string of Kibelt-supported services.
 
 ### FORCE_LOCAL_PROCESSING
 the value is a string: `never` (default), `session`, or `always`:
@@ -120,7 +120,7 @@ the value is a string: `never` (default), `session`, or `always`:
 - when set to `always`, all requests will be forced to use on-device processing, no matter the preference.
 
 ### API_ENV_FILE
-the URL or local path to a `key=value`-style environment variable file. this is used for dynamically reloading environment variables. **not all environment variables are able to be updated by this.** (e.g. the ratelimiters are instantiated when starting cobalt, and cannot be changed)
+the URL or local path to a `key=value`-style environment variable file. this is used for dynamically reloading environment variables. **not all environment variables are able to be updated by this.** (e.g. the ratelimiters are instantiated when starting Kibelt, and cannot be changed)
 
 ## networking
 [*jump to the table*](#networking-vars)
@@ -131,7 +131,7 @@ defines the local address for the api instance. if you are using a docker contai
 the value is a local IP address.
 
 ### HTTP_PROXY, HTTPS_PROXY, NO_PROXY
-URL of the proxy that will be passed to [`EnvHttpProxyAgent`](https://undici.nodejs.org/#/docs/api/EnvHttpProxyAgent) for proxying external requests. if some cobalt functionality breaks when using a proxy, please [make a new issue](https://github.com/imputnet/cobalt/issues) about it!
+URL of the proxy that will be passed to [`EnvHttpProxyAgent`](https://undici.nodejs.org/#/docs/api/EnvHttpProxyAgent) for proxying external requests. if some Kibelt functionality breaks when using a proxy, please [make a new issue](https://github.com/kibelt/kibelt/issues) about it!
 
 quoted from [undici docs](https://undici.nodejs.org/#/docs/api/EnvHttpProxyAgent):
 > When `HTTP_PROXY` and `HTTPS_PROXY` are set, `HTTP_PROXY` is used for HTTP requests and `HTTPS_PROXY` is used for HTTPS requests. If only `HTTP_PROXY` is set, `HTTP_PROXY` is used for both HTTP and HTTPS requests. If only `HTTPS_PROXY` is set, it is only used for HTTPS requests.
@@ -151,13 +151,13 @@ URL of the proxy that will be passed to [`EnvHttpProxyAgent`](https://undici.nod
 the value is a URL.
 
 ### FREEBIND_CIDR
-IPv6 prefix used for randomly assigning addresses to cobalt requests. available only on linux systems.
+IPv6 prefix used for randomly assigning addresses to Kibelt requests. available only on linux systems.
 
-setting a `FREEBIND_CIDR` allows cobalt to pick a random IP for every download and use it for all requests it makes for that particular download.
+setting a `FREEBIND_CIDR` allows Kibelt to pick a random IP for every download and use it for all requests it makes for that particular download.
 
-to use freebind in cobalt, you need to follow its [setup instructions](https://github.com/imputnet/freebind.js?tab=readme-ov-file#setup) first.
+to use freebind in Kibelt, you need to follow its [setup instructions](https://github.com/imputnet/freebind.js?tab=readme-ov-file#setup) first.
 
-if you want to use this option and run cobalt in a docker container, you also need to set the `API_LISTEN_ADDRESS` env variable to `127.0.0.1` and set `network_mode` for the container to `host`.
+if you want to use this option and run Kibelt in a docker container, you also need to set the `API_LISTEN_ADDRESS` env variable to `127.0.0.1` and set `network_mode` for the container to `host`.
 
 the value is an IPv6 range.
 
@@ -238,14 +238,14 @@ the secret used for issuing JWT tokens for request authentication. the value mus
 the value is a specific key.
 
 ### JWT_EXPIRY
-the duration of how long a cobalt-issued JWT token will remain valid, in seconds.
+the duration of how long a Kibelt-issued JWT token will remain valid, in seconds.
 
 the value is a number.
 
 ### API_KEY_URL
 the URL to the the external or local key database. for local files you have to specify a local path using the `file://` protocol.
 
-see [the api key section](/docs/protect-an-instance.md#api-key-file-format) in the "how to protect your cobalt instance" document for more details.
+see [the api key section](/docs/protect-an-instance.md#api-key-file-format) in the "how to protect your Kibelt instance" document for more details.
 
 the value is a URL.
 
@@ -274,13 +274,13 @@ the value is a string.
 
 ### YOUTUBE_PLAYER_ID
 a comma-separated-list of player IDs to use for youtube fetching.
-if defined, cobalt chooses one of them at each client initialization, otherwise
+if defined, Kibelt chooses one of them at each client initialization, otherwise
 defaults to the current latest player ID.
 
 the value is a string.
 
 ### YOUTUBE_ALLOW_BETTER_AUDIO
-when set to `1`, cobalt will try to use higher quality audio if user requests it via `youtubeBetterAudio`. will negatively impact the rate limit of a secondary youtube client with a session.
+when set to `1`, Kibelt will try to use higher quality audio if user requests it via `youtubeBetterAudio`. will negatively impact the rate limit of a secondary youtube client with a session.
 
 the value is a number, either `0` or `1`.
 

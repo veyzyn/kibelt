@@ -1,61 +1,52 @@
-<div align="center">
-    <br/>
-    <p>
-        <img src="web/static/favicon.png" title="cobalt" alt="cobalt logo" width="100" />
-    </p>
-    <p>
-        best way to save what you love
-        <br/>
-        <a href="https://cobalt.tools">
-            cobalt.tools
-        </a>
-    </p>
-    <p>
-        <a href="https://discord.gg/pQPt8HBUPu">
-            💬 community discord server
-        </a>
-        <br/>
-        <a href="https://x.com/justusecobalt">
-            🐦 twitter
-        </a>
-        <a href="https://bsky.app/profile/cobalt.tools">
-            🦋 bluesky
-        </a>
-    </p>
-    <br/>
-</div>
+# Kibelt
 
-cobalt is a media downloader that doesn't piss you off. it's friendly, efficient, and doesn't have ads, trackers, paywalls or other nonsense.
+Kibelt is a fork of [cobalt](https://github.com/imputnet/cobalt) for saving public media links through an open API, with a web client to drive it.
 
-paste the link, get the file, move on. that simple, just how it should be.
+## Layout
 
-### cobalt monorepo
-this monorepo includes source code for api, frontend, and related packages:
-- [api tree & readme](/api/)
-- [web tree & readme](/web/)
+- [api tree & readme](/api/) — the processing API/server.
+- [frontend](/frontend/) — the web client (Vite + React + Tailwind + shadcn/ui, animate-ui flourishes).
 - [packages tree](/packages/)
+- [docs tree](/docs/)
 
-it also includes documentation in the [docs tree](/docs/):
-- [how to run a cobalt instance](/docs/run-an-instance.md)
-- [how to protect a cobalt instance](/docs/protect-an-instance.md)
-- [cobalt api instance environment variables](/docs/api-env-variables.md)
-- [cobalt api documentation](/docs/api.md)
+## Local Development
 
-### ethics
-cobalt is a tool that makes downloading public content easier. it takes **zero liability**.
-the end user is responsible for what they download, how they use and distribute that content.
-cobalt never caches any content, it [works like a fancy proxy](/api/src/stream/).
+Install dependencies:
 
-cobalt is in no way a piracy tool and cannot be used as such.
-it can only download free & publicly accessible content.
-same content can be downloaded via dev tools of any modern web browser.
+```sh
+corepack pnpm install
+```
 
-### contributing
-if you're considering contributing to cobalt, first of all, thank you! check the [contribution guidelines here](/CONTRIBUTING.md) before getting started, they'll help you do your best right away.
+### Run everything (recommended)
 
-### thank you
-cobalt is sponsored by [royalehosting.net](https://royalehosting.net/?partner=cobalt). a part of our infrastructure is hosted on their network. we really appreciate their kindness and support!
+A single command starts both the API and the web client with prefixed logs and
+clean shutdown:
 
-### licenses
-for relevant licensing information, see the [api](api/README.md) and [web](web/README.md) READMEs.
-unless specified otherwise, the remainder of this repository is licensed under [AGPL-3.0](LICENSE).
+```sh
+corepack pnpm dev
+```
+
+- web → http://localhost:5273/
+- API → http://localhost:9000/
+
+Override ports/host with `WEB_PORT`, `API_PORT`, `API_HOST` env vars. The runner
+lives in [scripts/dev.mjs](/scripts/dev.mjs).
+
+### Run individually
+
+```sh
+corepack pnpm dev:api   # API only (runner sets API_URL/CORS for you)
+corepack pnpm dev:web   # web client only
+```
+
+To run the API completely by hand (without the runner), it needs `API_URL`:
+
+```powershell
+cd api
+$env:API_URL = "http://localhost:9000/"
+corepack pnpm start
+```
+
+## Attribution
+
+Kibelt is derived from cobalt by imput. The original cobalt code is AGPL-3.0; Kibelt keeps that license for the forked backend code.
