@@ -6,8 +6,13 @@ if you want to run your own instance for whatever purpose, [follow this guide](/
 we recommend to use docker compose unless you intend to run Kibelt for developing/debugging purposes.
 
 ## accessing the api
-there is currently no publicly available pre-hosted api.
-we recommend [deploying your own instance](/docs/run-an-instance.md) if you wish to use the Kibelt API.
+the public instance is hosted at **https://dl.kibe.lol/** — open to anyone, no keys or captchas.
+
+keyless shortcuts:
+- `https://dl.kibe.lol/<link>` — returns JSON (a download url + metadata)
+- `https://kibe.lol/<link>` — redirects straight to the file
+
+you can also [deploy your own instance](/docs/run-an-instance.md) if you'd rather host it yourself.
 
 you can read [the api documentation here](/docs/api.md).
 
@@ -58,7 +63,7 @@ if the desired service isn't supported yet, feel free to create an appropriate i
 | tiktok     | supports videos with or without watermark, images from slideshow without watermark, and full (original) audios.      |
 | twitter/x  | lets you pick what to save from multi-media posts. may not be 100% reliable due to current management.               |
 | vimeo      | audio downloads are only available for dash.                                                                         |
-| youtube    | supports videos, music, and shorts. 8K, 4K, HDR, VR, and high FPS videos. rich metadata & dubs. h264/av1/vp9 codecs. |
+| youtube    | the engine supports videos, music, and shorts (8K, 4K, HDR, VR, high FPS, rich metadata & dubs, h264/av1/vp9) — but youtube is **temporarily unavailable on the public instance** while we work on it. |
 
 ## license
 Kibelt API code is licensed under [AGPL-3.0](LICENSE).

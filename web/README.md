@@ -1,3 +1,9 @@
+> **Note (Kibelt fork):** this is cobalt's original SvelteKit web client,
+> retained from the upstream repository. **Kibelt does not use or build it** —
+> the Kibelt web client lives in [`/frontend`](/frontend/). this directory is
+> kept unmodified under its original CC-BY-NC-SA-4.0 license and cobalt
+> branding; everything below is cobalt's own README.
+
 # cobalt web
 the cobalt frontend is a static web app built with
 [sveltekit](https://kit.svelte.dev/) + [vite](https://vitejs.dev/).

@@ -1,8 +1,10 @@
 # Kibelt Frontend
 
 A web client for the Kibelt API. Paste a media link, pick your options, and
-download. Built with **Vite + React + TypeScript + Tailwind v4 + shadcn/ui**,
-with motion flourishes from [animate-ui](https://animate-ui.com).
+download. Built with **Vite + React + TypeScript + Tailwind v4**. The UI is a
+hand-rolled flat, monochrome design (no gradients) using a few
+[Radix](https://www.radix-ui.com/)/shadcn primitives and a couple of
+[animate-ui](https://animate-ui.com) helpers (copy button, tooltip).
 
 ## Local Commands
 
@@ -36,7 +38,7 @@ variable. The frontend never hardcodes an API domain.
 For production, create `.env` (or set the variable in your build environment):
 
 ```text
-VITE_KIBELT_API_URL=https://api.example.com/
+VITE_KIBELT_API_URL=https://dl.kibe.lol/
 ```
 
 ## What it does
@@ -57,6 +59,8 @@ VITE_KIBELT_API_URL=https://api.example.com/
     raw tunnel parts.
   - **error** — maps API error codes to friendly messages (see
     [`src/lib/kibelt/errors.ts`](src/lib/kibelt/errors.ts)).
+- A footer hint advertising the open API — `kibe.lol/<link>` to download
+  instantly, or `dl.kibe.lol/<link>` for JSON (download url + metadata).
 
 ## Structure
 
@@ -64,8 +68,8 @@ VITE_KIBELT_API_URL=https://api.example.com/
 src/
   lib/kibelt/        API client, request/response types, error-code mapping
   components/
-    ui/              shadcn/ui primitives
-    animate-ui/      animate-ui components (stars background, ripple/copy buttons)
+    ui/              Radix/shadcn primitives (button, input, select, switch, …)
+    animate-ui/      animate-ui helpers (copy button, tooltip)
     options-panel.tsx  download options form
     result-view.tsx    renders each API response type
   App.tsx            page composition
