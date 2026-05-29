@@ -1,19 +1,15 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { ArrowRight, ChevronDown, ClipboardPaste, Loader2 } from "lucide-react";
+import { ArrowRight, ClipboardPaste, Loader2, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 
-import {
-    RippleButton,
-    RippleButtonRipples,
-} from "@/components/animate-ui/components/buttons/ripple";
 import {
     Tooltip,
     TooltipContent,
     TooltipTrigger,
 } from "@/components/animate-ui/components/radix/tooltip";
 import { Toaster } from "@/components/ui/sonner";
-import { Input } from "@/components/ui/input";
+import { CopyButton } from "@/components/animate-ui/components/buttons/copy";
 import {
     DEFAULT_SETTINGS,
     OptionsPanel,
@@ -122,12 +118,12 @@ export function App() {
     const serviceCount = meta?.services?.length ?? 0;
 
     return (
-        <div className="relative z-10 flex min-h-screen flex-col">
+        <div className="flex min-h-screen flex-col">
             <Toaster theme="dark" position="top-center" />
 
             {/* Top bar */}
-            <header className="border-b border-border">
-                <div className="mx-auto flex h-14 w-full max-w-3xl items-center justify-between px-5 sm:px-6">
+            <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-sm">
+                <div className="mx-auto flex h-14 w-full max-w-2xl items-center justify-between px-5">
                     <div className="flex items-center gap-2.5">
                         <img src="/kibelt.svg" alt="" className="size-5" />
                         <span className="text-[15px] font-semibold tracking-tight">
@@ -143,24 +139,20 @@ export function App() {
             </header>
 
             {/* Main */}
-            <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-5 pt-16 sm:px-6 sm:pt-24">
+            <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center px-5 pt-20 pb-16 sm:pt-28">
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="w-full text-center"
                 >
-                    <p className="mb-4 text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                        Media downloader
-                    </p>
-                    <h1 className="font-display text-6xl leading-[0.95] tracking-tight sm:text-7xl">
-                        Save what
-                        <br />
-                        you <span className="italic">love</span>.
+                    <h1 className="text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl">
+                        Save what you love.
                     </h1>
-                    <p className="mt-6 max-w-md text-[15px] leading-relaxed text-muted-foreground">
+                    <p className="mx-auto mt-5 max-w-md text-balance text-[15px] leading-relaxed text-muted-foreground">
                         Paste a link from{" "}
                         {serviceCount > 0 ? `any of ${serviceCount}` : "dozens of"}{" "}
-                        supported services and pull the media straight down — no ads,
+                        supported services and pull the media straight down, no ads,
                         no trackers, no clutter.
                     </p>
                 </motion.div>
@@ -170,65 +162,64 @@ export function App() {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
-                    className="mt-10"
+                    className="mt-10 w-full"
                 >
-                    <div className="flex flex-col gap-2.5 sm:flex-row sm:items-stretch">
-                        <div className="group relative flex-1">
-                            <Input
-                                value={url}
-                                onChange={(e) => setUrl(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === "Enter") submit();
-                                }}
-                                placeholder="https://…"
-                                inputMode="url"
-                                autoComplete="off"
-                                spellCheck={false}
-                                aria-label="Media link"
-                                className="h-13 rounded-lg border-border bg-card pl-4 pr-12 font-mono text-[15px] shadow-none transition-colors placeholder:font-mono placeholder:text-muted-foreground/60 focus-visible:border-foreground/30 focus-visible:ring-0"
-                            />
-                            <button
-                                type="button"
-                                onClick={pasteFromClipboard}
-                                aria-label="Paste from clipboard"
-                                className="absolute right-1.5 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                            >
-                                <ClipboardPaste className="size-4" />
-                            </button>
-                        </div>
-                        <RippleButton
-                            onClick={submit}
-                            disabled={loading}
-                            className="group h-13 min-w-[8.5rem] cursor-pointer gap-2 rounded-lg bg-primary px-5 text-[15px] font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            submit();
+                        }}
+                        className="flex items-center gap-1.5 rounded-2xl border border-input bg-card p-1.5 transition-colors focus-within:border-foreground/35"
+                    >
+                        <input
+                            value={url}
+                            onChange={(e) => setUrl(e.target.value)}
+                            placeholder="https://…"
+                            inputMode="url"
+                            autoComplete="off"
+                            spellCheck={false}
+                            aria-label="Media link"
+                            className="h-11 min-w-0 flex-1 bg-transparent px-3.5 font-mono text-[15px] outline-none placeholder:text-muted-foreground/50"
+                        />
+                        <button
+                            type="button"
+                            onClick={pasteFromClipboard}
+                            aria-label="Paste from clipboard"
+                            className="grid size-11 shrink-0 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                         >
-                            <RippleButtonRipples />
+                            <ClipboardPaste className="size-[18px]" />
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="group flex h-11 shrink-0 cursor-pointer items-center gap-2 rounded-xl bg-primary px-4 text-[15px] font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
                             {loading ? (
-                                <>
-                                    <Loader2 className="size-4 animate-spin" />
-                                    Working
-                                </>
+                                <Loader2 className="size-[18px] animate-spin" />
                             ) : (
                                 <>
-                                    Download
-                                    <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+                                    <span className="hidden sm:inline">Download</span>
+                                    <ArrowRight className="size-[18px] transition-transform group-hover:translate-x-0.5" />
                                 </>
                             )}
-                        </RippleButton>
-                    </div>
+                        </button>
+                    </form>
 
-                    <button
-                        type="button"
-                        onClick={() => setShowOptions((v) => !v)}
-                        className="mt-3 flex items-center gap-1.5 rounded text-[13px] text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                        {showOptions ? "Hide options" : "Options"}
-                        <ChevronDown
+                    <div className="mt-3 flex justify-center">
+                        <button
+                            type="button"
+                            onClick={() => setShowOptions((v) => !v)}
                             className={cn(
-                                "size-3.5 transition-transform",
-                                showOptions && "rotate-180",
+                                "flex items-center gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-colors",
+                                showOptions
+                                    ? "bg-accent text-foreground"
+                                    : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
                             )}
-                        />
-                    </button>
+                        >
+                            <SlidersHorizontal className="size-3.5" />
+                            {showOptions ? "Hide options" : "Options"}
+                        </button>
+                    </div>
                 </motion.div>
 
                 {showOptions && (
@@ -236,9 +227,9 @@ export function App() {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         transition={{ duration: 0.25, ease: "easeOut" }}
-                        className="overflow-hidden"
+                        className="w-full overflow-hidden"
                     >
-                        <div className="mt-5 rounded-xl border border-border bg-card/40 p-4 sm:p-5">
+                        <div className="mt-4 rounded-2xl border border-border bg-card p-4 sm:p-5">
                             <OptionsPanel settings={settings} onChange={setSettings} />
                         </div>
                     </motion.div>
@@ -249,26 +240,106 @@ export function App() {
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, ease: "easeOut" }}
-                        className="mt-5 rounded-xl border border-border bg-card p-4 sm:p-5"
+                        className="mt-4 w-full rounded-2xl border border-border bg-card p-4 sm:p-5"
                     >
                         <ResultView response={result} />
                     </motion.div>
                 )}
             </main>
 
+            {/* Open-API callout */}
+            <ApiHint />
+
             {/* Footer */}
-            <footer className="mt-20 border-t border-border">
-                <div className="mx-auto flex w-full max-w-3xl flex-col items-start justify-between gap-1 px-5 py-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:px-6">
+            <footer className="border-t border-border">
+                <div className="mx-auto flex w-full max-w-2xl items-center justify-center px-5 py-5 text-xs text-muted-foreground">
                     <span>
-                        Kibelt — a fork of{" "}
-                        <span className="text-foreground/70">cobalt</span>
-                    </span>
-                    <span className="font-mono text-muted-foreground/70">
-                        {getApiBaseUrl()}
+                        <a
+                            href="https://github.com/veyzyn/kibelt"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-foreground/80 underline decoration-muted-foreground/40 underline-offset-4 transition-colors hover:text-foreground hover:decoration-foreground"
+                        >
+                            Kibelt
+                        </a>{" "}
+                        — a fork of{" "}
+                        <a
+                            href="https://github.com/imputnet/cobalt"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-foreground/80 underline decoration-muted-foreground/40 underline-offset-4 transition-colors hover:text-foreground hover:decoration-foreground"
+                        >
+                            cobalt.tools
+                        </a>
                     </span>
                 </div>
             </footer>
         </div>
+    );
+}
+
+function ApiHint() {
+    const webOrigin = (
+        typeof window !== "undefined"
+            ? window.location.origin
+            : "https://kibe.lol"
+    ).replace(/\/+$/, "");
+    const apiBase = getApiBaseUrl().replace(/\/+$/, "");
+
+    const short = (u: string) => u.replace(/^https?:\/\//, "");
+    const dlPattern = `${short(webOrigin)}/<link>`;
+    const jsonPattern = `${short(apiBase)}/<link>`;
+    const jsonExample = `${apiBase}/https://vimeo.com/76979871`;
+
+    return (
+        <section className="border-t border-border">
+            <div className="mx-auto w-full max-w-2xl px-5 py-8">
+                <p className="font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                    psst — no keys, no captchas
+                </p>
+                <p className="mt-2 max-w-prose text-[13px] leading-relaxed text-muted-foreground">
+                    Our API is open to anyone — no sign-ups, tokens, or robot
+                    checks. Append a link to download it instantly, or hit{" "}
+                    <code className="font-mono text-foreground/90">{short(apiBase)}</code>{" "}
+                    for JSON (download url + metadata).{" "}
+                    <a
+                        href={jsonExample}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-foreground underline decoration-muted-foreground/40 underline-offset-4 transition-colors hover:decoration-foreground"
+                    >
+                        Try it
+                    </a>
+                    .
+                </p>
+
+                <div className="mt-3 space-y-2">
+                    <div className="flex items-center gap-2.5 rounded-lg bg-muted/50 px-3 py-1.5">
+                        <span className="w-8 shrink-0 select-none font-mono text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                            file
+                        </span>
+                        <code className="min-w-0 flex-1 truncate font-mono text-[12px] text-foreground/80">
+                            {dlPattern}
+                        </code>
+                    </div>
+                    <div className="flex items-center gap-2.5 rounded-lg bg-muted/50 px-3 py-1.5">
+                        <span className="w-8 shrink-0 select-none font-mono text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                            json
+                        </span>
+                        <code className="min-w-0 flex-1 truncate font-mono text-[12px] text-foreground/80">
+                            {jsonPattern}
+                        </code>
+                        <CopyButton
+                            content={jsonExample}
+                            variant="ghost"
+                            size="xs"
+                            className="shrink-0 text-muted-foreground hover:text-foreground"
+                            aria-label="Copy example request"
+                        />
+                    </div>
+                </div>
+            </div>
+        </section>
     );
 }
 
@@ -285,7 +356,7 @@ function StatusBadge({
         reachable === null
             ? "bg-muted-foreground"
             : reachable
-              ? "bg-emerald-500"
+              ? "bg-ok"
               : "bg-destructive";
     const text =
         reachable === null
@@ -295,22 +366,22 @@ function StatusBadge({
               : "offline";
 
     return (
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
             <span className="relative flex size-1.5">
                 {reachable && (
-                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-60" />
+                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-ok opacity-60" />
                 )}
                 <span className={cn("relative inline-flex size-1.5 rounded-full", dot)} />
             </span>
             <span className="tabular-nums">
                 {text}
                 {reachable && version && (
-                    <span className="text-muted-foreground/60"> · v{version}</span>
+                    <span className="text-muted-foreground/55"> · v{version}</span>
                 )}
             </span>
             {reachable && services.length > 0 && (
                 <>
-                    <span className="text-muted-foreground/40">·</span>
+                    <span className="text-muted-foreground/35">·</span>
                     <ServicesTooltip services={services} />
                 </>
             )}
@@ -333,20 +404,24 @@ function ServicesTooltip({ services }: { services: string[] }) {
             <TooltipContent
                 side="bottom"
                 align="end"
-                className="w-[min(24rem,86vw)] p-3"
+                className="w-[min(26rem,88vw)] p-4"
             >
-                <p className="mb-2.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                    Supported services
+                <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                    {services.length} supported services
                 </p>
-                <div className="grid grid-cols-3 gap-1.5">
-                    {sorted.map((name) => (
-                        <span
-                            key={name}
-                            className="truncate rounded-md border border-border bg-background/50 px-2 py-1 text-center text-[11px] capitalize text-foreground/80"
-                            title={name}
-                        >
-                            {name}
-                        </span>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[12.5px] leading-relaxed text-foreground/75">
+                    {sorted.map((name, i) => (
+                        <Fragment key={name}>
+                            {i > 0 && (
+                                <span
+                                    aria-hidden
+                                    className="text-muted-foreground/30"
+                                >
+                                    ·
+                                </span>
+                            )}
+                            <span className="capitalize">{name}</span>
+                        </Fragment>
                     ))}
                 </div>
             </TooltipContent>

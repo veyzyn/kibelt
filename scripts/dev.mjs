@@ -21,7 +21,12 @@ const root = resolve(__dirname, "..");
 const API_PORT = process.env.API_PORT || "9000";
 const WEB_PORT = process.env.WEB_PORT || "5273";
 const API_HOST = process.env.API_HOST || "localhost";
-const API_URL = `http://${API_HOST}:${API_PORT}/`;
+// Public-facing API URL. Honour an explicit override (e.g. behind a reverse
+// proxy with TLS) and otherwise fall back to the local host:port.
+const API_URL = process.env.API_URL || `http://${API_HOST}:${API_PORT}/`;
+// What the browser client should call. Defaults to the API URL above, but can
+// differ from it when the web client and API live on separate public domains.
+const WEB_API_URL = process.env.VITE_KIBELT_API_URL || API_URL;
 
 const isWindows = process.platform === "win32";
 
@@ -123,8 +128,8 @@ if (runApi) {
         env: {
             API_URL,
             API_PORT,
-            // dev-friendly: open CORS so the Vite origin can call the API
-            CORS_WILDCARD: "1",
+            // open CORS so the web origin (and anyone else) can call the API
+            CORS_WILDCARD: process.env.CORS_WILDCARD ?? "1",
         },
     });
 }
@@ -142,7 +147,7 @@ if (runWeb) {
     ], {
         cwd: root,
         env: {
-            VITE_KIBELT_API_URL: API_URL,
+            VITE_KIBELT_API_URL: WEB_API_URL,
         },
     });
 }

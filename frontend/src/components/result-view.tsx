@@ -101,7 +101,7 @@ function PickerResult({ data }: { data: PickerResponse }) {
                                 )}
                             </div>
                         )}
-                        <div className="absolute inset-0 flex items-end justify-between bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 transition-opacity group-hover:opacity-100">
+                        <div className="absolute inset-0 flex items-end justify-between bg-black/55 p-2 opacity-0 transition-opacity group-hover:opacity-100">
                             <span className="font-mono text-[10px] uppercase tracking-wider text-white">
                                 {item.type}
                             </span>

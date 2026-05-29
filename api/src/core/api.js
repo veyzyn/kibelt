@@ -44,6 +44,35 @@ const fail = (res, code, context) => {
     res.status(status).json(body);
 }
 
+// YouTube is soft-disabled: ordinary YouTube links are rejected with a
+// "coming soon" message. Submitting the link with a `httpz://` scheme is a
+// developer bypass — we rewrite `httpz` → `https` and let it through.
+const YOUTUBE_HOST = /(?:^|\.)(?:youtube\.com|youtu\.be|youtube-nocookie\.com)$/i;
+
+const youtubeGuard = (rawUrl) => {
+    let url = String(rawUrl ?? "").trim();
+    let bypass = false;
+
+    if (/^httpz:\/\//i.test(url)) {
+        bypass = true;
+        url = url.replace(/^httpz:\/\//i, "https://");
+    }
+
+    let host = "";
+    try {
+        host = new URL(url).hostname.toLowerCase();
+    } catch {
+        // not parseable yet — let the normal pipeline report the error
+        return { url };
+    }
+
+    if (!bypass && YOUTUBE_HOST.test(host)) {
+        return { blocked: true };
+    }
+
+    return { url };
+}
+
 export const runAPI = async (express, app, __dirname, isPrimary = true) => {
     const startTime = new Date();
     const startTimestamp = startTime.getTime();
@@ -240,6 +269,12 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
             return fail(res, "error.api.link.missing");
         }
 
+        const yt = youtubeGuard(request.url);
+        if (yt.blocked) {
+            return fail(res, "error.api.youtube.unsupported");
+        }
+        request.url = yt.url;
+
         const { success, data: normalizedRequest } = await normalizeRequest(request);
         if (!success) {
             return fail(res, "error.api.invalid_body");
@@ -320,6 +355,103 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
         res.type('json');
         res.status(200).send(env.envFile ? getServerInfo() : serverInfo);
     })
+
+    // Open, no-frills download proxy: GET /download/<link>
+    // No keys, no captcha, no session — resolves the link with sane defaults
+    // (auto video+audio) and 302-redirects straight to the media. Anything that
+    // can't be a single redirect (pickers, local-processing, errors) comes back
+    // as the same JSON the POST endpoint returns.
+    // Shared resolver for the keyless GET shortcuts. Reconstructs the link from
+    // a raw path tail, runs the YouTube guard + the normal processing pipeline,
+    // and returns either an { error } code or the { status, body } match result.
+    const resolveLinkTail = async (tail, req) => {
+        if (!tail) {
+            return { error: "error.api.link.missing" };
+        }
+
+        // Accept both raw (`https://…`) and percent-encoded links.
+        let link = tail;
+        try {
+            link = decodeURIComponent(tail);
+        } catch {
+            // not valid percent-encoding — use the raw tail as-is
+        }
+
+        const yt = youtubeGuard(link);
+        if (yt.blocked) {
+            return { error: "error.api.youtube.unsupported" };
+        }
+        link = yt.url;
+
+        const { success, data: normalizedRequest } = await normalizeRequest({ url: link });
+        if (!success) {
+            return { error: "error.api.link.invalid" };
+        }
+
+        const parsed = extract(
+            normalizedRequest.url,
+            APIKeys.getAllowedServices(req.rateLimitKey),
+        );
+
+        if (!parsed) {
+            return { error: "error.api.link.invalid" };
+        }
+
+        if ("error" in parsed) {
+            return { error: `error.api.${parsed.error}`, context: parsed.context };
+        }
+
+        try {
+            const { status, body } = await match({
+                host: parsed.host,
+                patternMatch: parsed.patternMatch,
+                params: normalizedRequest,
+                authType: "none",
+            });
+            return { status, body };
+        } catch {
+            return { error: "error.api.generic" };
+        }
+    };
+
+    // Open CORS for the keyless shortcuts.
+    app.use('/download', cors({ methods: ['GET'], origin: '*' }));
+
+    // GET /download/<link> — no keys, no captcha. 302-redirects straight to the
+    // media (this is what the kibe.lol/<link> shortcut points at). Results that
+    // can't be a single redirect (pickers, local-processing, errors) are JSON.
+    app.get(/^\/download\//, apiLimiter, async (req, res) => {
+        const marker = '/download/';
+        const tail = req.originalUrl.slice(
+            req.originalUrl.indexOf(marker) + marker.length,
+        );
+
+        const r = await resolveLinkTail(tail, req);
+        if (r.error) {
+            return fail(res, r.error, r.context);
+        }
+
+        if (r.body?.status === "tunnel" || r.body?.status === "redirect") {
+            return res.redirect(r.body.url);
+        }
+
+        return res.status(r.status).json(r.body);
+    });
+
+    // GET /<link> — developer-friendly: returns the full JSON response (a
+    // download url + metadata) instead of redirecting. This is what
+    // dl.kibe.lol/<link> serves. Matches root paths beginning with a URL scheme
+    // (http / https / httpz), raw or percent-encoded.
+    app.get(/^\/(?:https?|httpz)(?::\/\/|%3a)/i, apiLimiter, async (req, res) => {
+        const tail = req.originalUrl.replace(/^\//, "");
+
+        const r = await resolveLinkTail(tail, req);
+        if (r.error) {
+            return fail(res, r.error, r.context);
+        }
+
+        return res.status(r.status).json(r.body);
+    });
 
     app.get('/favicon.ico', (req, res) => {
         res.status(404).end();

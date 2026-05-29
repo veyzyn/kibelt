@@ -30,6 +30,8 @@ const ERROR_MESSAGES: Record<string, string> = {
     "error.api.content.post.unavailable": "This post is unavailable.",
     "error.api.content.post.private": "This post is private.",
     "error.api.content.post.age": "This post is age-restricted.",
+    "error.api.youtube.unsupported":
+        "YouTube links are currently unsupported — we're working to support them.",
     "error.api.youtube.login": "YouTube requires authentication for this video.",
     "error.api.youtube.token_expired": "The instance's YouTube token expired.",
     "error.api.youtube.no_hls_streams": "No HLS streams available for this video.",

@@ -10,4 +10,9 @@ export default defineConfig({
             "@": path.resolve(__dirname, "./src"),
         },
     },
+    server: {
+        // Accept the Host header forwarded by the reverse proxy (Caddy /
+        // Cloudflare) in front of the dev server. localhost is always allowed.
+        allowedHosts: ["kibe.lol", "kibelt.nocturne.gay"],
+    },
 });
