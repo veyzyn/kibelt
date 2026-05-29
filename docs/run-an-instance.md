@@ -1,15 +1,15 @@
 # how to run a Kibelt instance
 this tutorial will help you run your own Kibelt processing instance. if your instance is public-facing, we highly recommend that you also [protect it from abuse](/docs/protect-an-instance.md) using api keys or other abuse controls.
 
-## using docker compose and package from github (recommended)
-to run the Kibelt docker package, you need to have `docker` and `docker-compose` installed and configured.
+## using docker compose (recommended)
+to run Kibelt in docker, you need to have `docker` and `docker-compose` installed and configured. Kibelt doesn't publish a prebuilt image, so the compose file below builds it straight from the repo.
 
 if you need help with installing docker, you can find more information here:
 - [how to install docker](https://docs.docker.com/engine/install/)
 - [how to install docker compose](https://docs.docker.com/compose/install/)
 
-## how to run a Kibelt docker package:
-1. create a folder for Kibelt config file, something like this:
+## how to run Kibelt with docker compose:
+1. create a folder for the Kibelt config file, something like this:
     ```sh
     mkdir kibelt
     ```
@@ -23,16 +23,19 @@ if you need help with installing docker, you can find more information here:
 3. copy and paste the [sample config from here](examples/docker-compose.example.yml) and edit it to your needs.
     make sure to replace default URLs with your own or Kibelt won't work correctly.
 
-4. finally, start the Kibelt container (from Kibelt directory):
+4. finally, build & start the Kibelt container (from the Kibelt directory):
     ```sh
-    docker compose up -d
+    docker compose up -d --build
     ```
 
-if you want your instance to support services that require authentication to view public content, create `cookies.json` file in the same directory as `docker-compose.yml`. example cookies file [can be found here](examples/cookies.example.json).
+if you want your instance to support services that require authentication to view content (e.g. age-restricted twitter/x posts), create a `cookies.json` file in the same directory as `docker-compose.yml`. example cookies file [can be found here](examples/cookies.example.json).
 
-Kibelt package will update automatically thanks to watchtower.
+to update later, rebuild from the latest source:
+```sh
+docker compose build --pull && docker compose up -d
+```
 
-it's highly recommended to use a reverse proxy (such as nginx) if you want your instance to face the public internet. look up tutorials online.
+it's highly recommended to use a reverse proxy (such as nginx or caddy) if you want your instance to face the public internet. look up tutorials online.
 
 ## run Kibelt API outside of docker (useful for local development)
 requirements:

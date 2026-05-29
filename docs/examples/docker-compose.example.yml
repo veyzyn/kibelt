@@ -1,6 +1,9 @@
 services:
     kibelt:
-        image: ghcr.io/kibelt/kibelt:latest
+        # Kibelt doesn't publish a prebuilt image — build straight from the repo.
+        # (replace with `image: <your-registry>/kibelt` if you push your own.)
+        build:
+            context: https://github.com/veyzyn/kibelt.git#main
 
         init: true
         read_only: true
@@ -9,7 +12,7 @@ services:
 
         ports:
             - 9000:9000/tcp
-            # if you use a reverse proxy (such as nginx),
+            # if you use a reverse proxy (such as nginx/caddy),
             # uncomment the next line and remove the one above (9000:9000/tcp):
             # - 127.0.0.1:9000:9000
 
@@ -18,8 +21,9 @@ services:
             # or else tunneling functionality won't work properly
             API_URL: "https://api.url.example/"
 
-            # if you want to use cookies for fetching data from services,
-            # uncomment the next line & volumes section
+            # if you want to use cookies for fetching data from services
+            # (required for e.g. age-restricted twitter/x content),
+            # uncomment the next line & the volumes section below
             # COOKIE_PATH: "/cookies.json"
 
             # it's recommended to configure bot protection or api keys if the instance is public,
@@ -27,27 +31,15 @@ services:
 
             # see /docs/run-an-instance.md for more variables that you can use here
 
-        labels:
-            - com.centurylinklabs.watchtower.scope=kibelt
-
         # uncomment only if you use the COOKIE_PATH variable
         # volumes:
             # - ./cookies.json:/cookies.json
 
-    # watchtower updates the Kibelt image automatically
-    watchtower:
-        image: ghcr.io/containrrr/watchtower
-        restart: unless-stopped
-        command: --cleanup --scope kibelt --interval 900 --include-restarting
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock
-
     # if needed, use this image for automatically generating poToken & visitor_data
     # yt-session-generator:
     #     image: ghcr.io/imputnet/yt-session-generator:webserver
-
     #     init: true
     #     restart: unless-stopped
     #     container_name: yt-session-generator
-    #     labels:
-    #       - com.centurylinklabs.watchtower.scope=kibelt
+
+# to update: `docker compose build --pull && docker compose up -d`

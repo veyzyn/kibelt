@@ -1,15 +1,34 @@
 # Kibelt API documentation
 methods, acceptable values, headers, responses and everything else related to making and parsing requests from a Kibelt API instance.
 
-> [!IMPORTANT]
-> hosted upstream cobalt api instances are **not** intended to be used in other projects without explicit permission. if you want to use the Kibelt API, you should [host your own instance](/docs/run-an-instance.md).
+> [!NOTE]
+> the public Kibelt API at **https://dl.kibe.lol/** is open to everyone — no keys, no captchas, no sign-up. you're welcome to use it directly, or [host your own instance](/docs/run-an-instance.md).
 
+- [keyless shortcuts](#keyless-shortcuts)
 - [POST /](#post)
 - [POST /session](#post-session)
 - [GET /](#get)
 - [GET /tunnel](#get-tunnel)
 
 all endpoints (except for `GET /`) are rate limited and return current rate limiting status in `RateLimit-*` headers, according to the ["RateLimit Header Fields for HTTP" spec](https://www.ietf.org/archive/id/draft-polli-ratelimit-headers-02.html#name-header-specifications).
+
+## keyless shortcuts
+for quick, no-frills use you can pass a link straight in the URL — no body, no headers, no auth:
+
+| request                                  | behavior                                                                          |
+|:-----------------------------------------|:----------------------------------------------------------------------------------|
+| `GET https://dl.kibe.lol/<link>`         | resolves the link and returns the same JSON as `POST /` (a download url + metadata) |
+| `GET https://dl.kibe.lol/download/<link>`| resolves the link and **302-redirects** straight to the file                      |
+| `GET https://kibe.lol/<link>`            | convenience alias that redirects to `download/<link>` — i.e. just downloads        |
+
+`<link>` may be raw or percent-encoded, for example:
+```
+https://dl.kibe.lol/https://x.com/i/status/123456
+https://kibe.lol/https://soundcloud.com/artist/track
+```
+
+these shortcuts use sane defaults (auto video+audio, 1080p). for full control over
+options, use [`POST /`](#post) below.
 
 ## authentication
 an api instance may be configured to require you to authenticate yourself.
@@ -36,13 +55,13 @@ Authorization: Api-Key aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
 ```
 
 if you are an instance owner and wish to configure api key authentication,
-see the [instance](run-an-instance.md#api-key-file-format) documentation!
+see the [protect-an-instance](protect-an-instance.md#api-key-file-format) documentation!
 
 ### bearer authentication
-the Kibelt server may be configured to issue JWT bearers, which are short-lived
-tokens intended for use by regular users (e.g. after passing a challenge).
-currently, Kibelt inherits upstream session token support; the open API path will remove the captcha dependency.
-challenge, if the instance has turnstile configured. the resulting token is passed like so:
+the Kibelt server may be configured to issue JWT bearers — short-lived tokens
+intended for regular users after passing a Cloudflare Turnstile challenge (only
+if the instance has Turnstile configured). the public instance does not require
+this. the resulting token is passed like so:
 ```
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
