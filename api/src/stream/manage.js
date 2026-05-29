@@ -43,6 +43,9 @@ export function createStream(obj) {
             isHLS: obj.isHLS || false,
             originalRequest: obj.originalRequest,
 
+            // gif compression toggle (default on); false = full quality
+            gifCompress: obj.gifCompress !== false,
+
             // url to a subtitle file
             subtitles: obj.subtitles,
         };

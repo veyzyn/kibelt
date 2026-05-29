@@ -327,6 +327,7 @@ export default async function({ host, patternMatch, params, authType }) {
             disableMetadata: params.disableMetadata,
             filenameStyle: params.filenameStyle,
             convertGif: params.convertGif,
+            compress: params.compress,
             requestIP,
             audioBitrate: params.audioBitrate,
             alwaysProxy: params.alwaysProxy || localProcessing === "forced",

@@ -17,6 +17,7 @@ export default function({
     disableMetadata,
     filenameStyle,
     convertGif,
+    compress,
     requestIP,
     audioBitrate,
     alwaysProxy,
@@ -71,7 +72,7 @@ export default function({
             break;
 
         case "gif":
-            params = { type: "gif" };
+            params = { type: "gif", gifCompress: compress };
             break;
 
         case "hls":

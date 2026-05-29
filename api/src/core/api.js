@@ -377,13 +377,28 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
             // not valid percent-encoding — use the raw tail as-is
         }
 
+        // Pull our own `?compress=false` flag out of the link before processing.
+        // Everything else stays part of the link's own query string.
+        let compress = true;
+        try {
+            const parsed = new URL(link);
+            if (parsed.searchParams.has("compress")) {
+                const v = parsed.searchParams.get("compress").toLowerCase();
+                compress = !["false", "0", "no", "off"].includes(v);
+                parsed.searchParams.delete("compress");
+                link = parsed.toString();
+            }
+        } catch {
+            // not a parseable URL yet — leave it for the pipeline to reject
+        }
+
         const yt = youtubeGuard(link);
         if (yt.blocked) {
             return { error: "error.api.youtube.unsupported" };
         }
         link = yt.url;
 
-        const { success, data: normalizedRequest } = await normalizeRequest({ url: link });
+        const { success, data: normalizedRequest } = await normalizeRequest({ url: link, compress });
         if (!success) {
             return { error: "error.api.link.invalid" };
         }

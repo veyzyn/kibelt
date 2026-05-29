@@ -190,11 +190,20 @@ const convertAudio = async (streamInfo, res) => {
 }
 
 const convertGif = async (streamInfo, res) => {
+    // compressed (default): cap frame rate and downscale wide gifs so the
+    // result stays small enough for chat embeds — discord, for example, only
+    // animates gifs under a few MB and shows a static frame otherwise.
+    // `compress=false` keeps the original resolution & frame rate.
+    const compress = streamInfo.gifCompress !== false;
+
+    const filter = compress
+        ? "fps=15,scale=min(480\\,iw):-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse"
+        : "scale=-1:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse";
+
     const args = [
         '-i', streamInfo.urls,
 
-        '-vf',
-        'scale=-1:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse',
+        '-vf', filter,
         '-loop', '0',
 
         '-f', 'gif', 'pipe:3',
@@ -204,7 +213,7 @@ const convertGif = async (streamInfo, res) => {
         res,
         streamInfo,
         args,
-        60,
+        compress ? 20 : 60,
     );
 }
 
