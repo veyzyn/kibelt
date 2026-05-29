@@ -80,7 +80,10 @@ const render = async (res, streamInfo, ffargs, estimateMultiplier) => {
         const [,,, muxOutput] = process.stdio;
 
         res.setHeader('Connection', 'keep-alive');
-        res.setHeader('Content-Disposition', contentDisposition(streamInfo.filename));
+        res.setHeader(
+            'Content-Disposition',
+            contentDisposition(streamInfo.filename, { type: streamInfo.disposition || 'attachment' })
+        );
 
         res.setHeader(
             'Estimated-Content-Length',

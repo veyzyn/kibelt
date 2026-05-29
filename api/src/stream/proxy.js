@@ -16,7 +16,10 @@ export default async function (streamInfo, res) {
 
     try {
         res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-        res.setHeader('Content-disposition', contentDisposition(streamInfo.filename));
+        res.setHeader(
+            'Content-disposition',
+            contentDisposition(streamInfo.filename, { type: streamInfo.disposition || 'attachment' })
+        );
 
         const { body: stream, headers, statusCode } = await request(streamInfo.urls, {
             headers: {

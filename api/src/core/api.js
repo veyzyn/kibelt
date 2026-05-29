@@ -366,6 +366,13 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
             streamInfo.range = req.headers['range'];
         }
 
+        // when fetched via the /tunnel/<filename> alias (the embed path), serve
+        // the media inline so embedders (e.g. discord) display & animate it
+        // instead of treating it as a file download (which renders a static frame).
+        if (req.params?.filename) {
+            streamInfo.disposition = "inline";
+        }
+
         return stream(res, streamInfo);
     };
 
