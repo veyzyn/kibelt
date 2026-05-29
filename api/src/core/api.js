@@ -73,24 +73,6 @@ const youtubeGuard = (rawUrl) => {
     return { url };
 }
 
-// Give our own /tunnel URLs a real file extension in the path (e.g.
-// /tunnel/twitter_123.gif?...) without touching the query that carries the
-// actual stream data. embedders like discord decide whether to animate a gif
-// (vs. showing a static frame) by the URL extension, not the content-type — so
-// this makes gifs embed live.
-const tunnelWithFilename = (tunnelUrl, filename) => {
-    if (!filename) return tunnelUrl;
-    try {
-        const u = new URL(tunnelUrl);
-        if (u.pathname === "/tunnel") {
-            u.pathname = `/tunnel/${encodeURIComponent(filename)}`;
-        }
-        return u.toString();
-    } catch {
-        return tunnelUrl;
-    }
-}
-
 export const runAPI = async (express, app, __dirname, isPrimary = true) => {
     const startTime = new Date();
     const startTimestamp = startTime.getTime();
@@ -338,7 +320,7 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
         ...corsConfig,
     }));
 
-    const tunnelHandler = async (req, res) => {
+    app.get('/tunnel', apiTunnelLimiter, async (req, res) => {
         const id = String(req.query.id);
         const exp = String(req.query.exp);
         const sig = String(req.query.sig);
@@ -366,21 +348,8 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
             streamInfo.range = req.headers['range'];
         }
 
-        // when fetched via the /tunnel/<filename> alias (the embed path), serve
-        // the media inline so embedders (e.g. discord) display & animate it
-        // instead of treating it as a file download (which renders a static frame).
-        if (req.params?.filename) {
-            streamInfo.disposition = "inline";
-        }
-
         return stream(res, streamInfo);
-    };
-
-    // `/tunnel/<filename>` is an alias for `/tunnel`. the filename in the path is
-    // purely cosmetic (the query carries the real data), but it gives the URL a
-    // proper file extension so embedders (e.g. discord) recognise & animate gifs.
-    app.get('/tunnel', apiTunnelLimiter, tunnelHandler);
-    app.get('/tunnel/:filename', apiTunnelLimiter, tunnelHandler);
+    });
 
     app.get('/', (_, res) => {
         res.type('json');
@@ -478,12 +447,7 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
         }
 
         if (r.body?.status === "tunnel" || r.body?.status === "redirect") {
-            // for our own tunnels, redirect to the filename'd alias so the URL
-            // ends in a real extension (.gif/.mp4/…) — embedders need that.
-            const target = r.body.status === "tunnel"
-                ? tunnelWithFilename(r.body.url, r.body.filename)
-                : r.body.url;
-            return res.redirect(target);
+            return res.redirect(r.body.url);
         }
 
         return res.status(r.status).json(r.body);
