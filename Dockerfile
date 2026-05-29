@@ -17,6 +17,9 @@ RUN pnpm deploy --filter=@kibelt/api --prod /prod/api
 FROM base AS api
 WORKDIR /app
 
+# gifsicle provides the lossy gif encoder used to compress gifs
+RUN apk add --no-cache gifsicle
+
 COPY --from=build --chown=node:node /prod/api /app
 COPY --from=build --chown=node:node /app/.git /app/.git
 
