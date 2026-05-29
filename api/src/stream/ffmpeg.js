@@ -1,3 +1,4 @@
+import mime from "mime";
 import ffmpeg from "ffmpeg-static";
 import { spawn } from "child_process";
 import { create as contentDisposition } from "content-disposition-header";
@@ -84,6 +85,13 @@ const render = async (res, streamInfo, ffargs, estimateMultiplier) => {
             'Content-Disposition',
             contentDisposition(streamInfo.filename, { type: streamInfo.disposition || 'attachment' })
         );
+
+        // set a real Content-Type from the output filename (e.g. image/gif,
+        // video/mp4) so embedders correctly recognise the media.
+        const mimeType = mime.getType(streamInfo.filename);
+        if (mimeType) {
+            res.setHeader('Content-Type', mimeType);
+        }
 
         res.setHeader(
             'Estimated-Content-Length',
