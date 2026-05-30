@@ -45,33 +45,11 @@ const fail = (res, code, context) => {
     res.status(status).json(body);
 }
 
-// YouTube is soft-disabled: ordinary YouTube links are rejected with a
-// "coming soon" message. Submitting the link with a `httpz://` scheme is a
-// developer bypass — we rewrite `httpz` → `https` and let it through.
-const YOUTUBE_HOST = /(?:^|\.)(?:youtube\.com|youtu\.be|youtube-nocookie\.com)$/i;
-
-const youtubeGuard = (rawUrl) => {
-    let url = String(rawUrl ?? "").trim();
-    let bypass = false;
-
-    if (/^httpz:\/\//i.test(url)) {
-        bypass = true;
-        url = url.replace(/^httpz:\/\//i, "https://");
-    }
-
-    let host = "";
-    try {
-        host = new URL(url).hostname.toLowerCase();
-    } catch {
-        // not parseable yet — let the normal pipeline report the error
-        return { url };
-    }
-
-    if (!bypass && YOUTUBE_HOST.test(host)) {
-        return { blocked: true };
-    }
-
-    return { url };
+// `httpz://` was a developer bypass scheme from when YouTube was soft-disabled.
+// YouTube is now enabled for everyone; we still rewrite httpz → https so any
+// lingering bypass links keep working.
+const normalizeHttpzScheme = (rawUrl) => {
+    return String(rawUrl ?? "").trim().replace(/^httpz:\/\//i, "https://");
 }
 
 const isSessionRequired = (ip) => {
@@ -276,11 +254,7 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
             return fail(res, "error.api.link.missing");
         }
 
-        const yt = youtubeGuard(request.url);
-        if (yt.blocked) {
-            return fail(res, "error.api.youtube.unsupported");
-        }
-        request.url = yt.url;
+        request.url = normalizeHttpzScheme(request.url);
 
         const { success, data: normalizedRequest } = await normalizeRequest(request);
         if (!success) {
@@ -399,11 +373,7 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
             // not a parseable URL yet — leave it for the pipeline to reject
         }
 
-        const yt = youtubeGuard(link);
-        if (yt.blocked) {
-            return { error: "error.api.youtube.unsupported" };
-        }
-        link = yt.url;
+        link = normalizeHttpzScheme(link);
 
         const { success, data: normalizedRequest } = await normalizeRequest({ url: link, compress });
         if (!success) {
