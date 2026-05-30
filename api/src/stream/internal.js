@@ -77,6 +77,7 @@ async function handleChunkedStream(streamInfo, res) {
         const size = BigInt(req.headers.get('content-length'));
 
         if (req.status !== 200 || !size) {
+            globalThis.FORCE_RESET_INNERTUBE_PLAYER = true;
             return cleanup();
         }
 
@@ -110,6 +111,7 @@ async function handleGenericStream(streamInfo, res) {
         const fileResponse = await request(streamInfo.url, {
             headers: {
                 ...Object.fromEntries(streamInfo.headers),
+                ...getHeaders(streamInfo.service),
                 host: undefined
             },
             dispatcher: streamInfo.dispatcher,
@@ -133,6 +135,7 @@ async function handleGenericStream(streamInfo, res) {
         }
 
         if (isHls) {
+            res.setHeader("Content-Type", "application/vnd.apple.mpegurl");
             await handleHlsPlaylist(streamInfo, fileResponse, res);
         } else {
             pipe(fileResponse.body, res, cleanup);

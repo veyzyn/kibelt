@@ -1,4 +1,5 @@
 import { strict as assert } from "node:assert";
+import { ProxyAgent } from "undici";
 
 import { env } from "../config.js";
 import { createResponse } from "../processing/request.js";
@@ -30,12 +31,14 @@ import facebook from "./services/facebook.js";
 import bluesky from "./services/bluesky.js";
 import newgrounds from "./services/newgrounds.js";
 
+const MAX_RETRY_AMOUNT = 5;
+
 let freebind;
 
-export default async function({ host, patternMatch, params, authType }) {
+export default async function match({ host, patternMatch, params, authType, retryCount = 0 }) {
     const { url } = params;
     assert(url instanceof URL);
-    let dispatcher, requestIP;
+    let dispatcher, requestIP, proxyToUse;
 
     if (env.freebindCIDR) {
         if (!freebind) {
@@ -44,6 +47,20 @@ export default async function({ host, patternMatch, params, authType }) {
 
         requestIP = freebind.ip.random(env.freebindCIDR);
         dispatcher = freebind.dispatcherFromIP(requestIP, { strict: false });
+    }
+
+    if (env.sourceIps) {
+        if (!freebind) {
+            freebind = await import('freebind');
+        }
+
+        requestIP = env.sourceIps[Math.floor(Math.random() * env.sourceIps.length)];
+        dispatcher = freebind.dispatcherFromIP(requestIP, { strict: false });
+    }
+
+    if (env.proxies) {
+        proxyToUse = env.proxies[Math.floor(Math.random() * env.proxies.length)];
+        dispatcher = new ProxyAgent(proxyToUse);
     }
 
     try {
@@ -112,7 +129,8 @@ export default async function({ host, patternMatch, params, authType }) {
             case "youtube":
                 let fetchInfo = {
                     dispatcher,
-                    id: patternMatch.id.slice(0, 11),
+                    id: patternMatch.id?.slice(0, 11),
+                    postId: patternMatch.postId,
                     quality: params.videoQuality,
                     codec: params.youtubeVideoCodec,
                     container: params.youtubeVideoContainer,
@@ -121,6 +139,8 @@ export default async function({ host, patternMatch, params, authType }) {
                     dubLang: params.youtubeDubLang,
                     youtubeHLS,
                     subtitleLang,
+                    alwaysProxy: params.alwaysProxy,
+                    requestIP,
                 }
 
                 if (url.hostname === "music.youtube.com" || isAudioOnly) {
@@ -284,6 +304,10 @@ export default async function({ host, patternMatch, params, authType }) {
         }
 
         if (r.error) {
+            if (r.retry) {
+                if (++retryCount < MAX_RETRY_AMOUNT)
+                    return await match({ host, patternMatch, params, authType, retryCount });
+            }
             let context;
             switch(r.error) {
                 case "content.too_long":
@@ -311,7 +335,7 @@ export default async function({ host, patternMatch, params, authType }) {
 
         let localProcessing = params.localProcessing;
         const lpEnv = env.forceLocalProcessing;
-        const shouldForceLocal = lpEnv === "always" || (lpEnv === "session" && authType === "session");
+        const shouldForceLocal = lpEnv === "always" || (lpEnv === "session" && ["session", "none"].includes(authType));
         const localDisabled = (!localProcessing || localProcessing === "disabled");
 
         if (shouldForceLocal && localDisabled) {
@@ -328,7 +352,8 @@ export default async function({ host, patternMatch, params, authType }) {
             filenameStyle: params.filenameStyle,
             convertGif: params.convertGif,
             compress: params.compress,
-            requestIP,
+            requestIP: r.requestIP ?? requestIP,
+            proxyToUse,
             audioBitrate: params.audioBitrate,
             alwaysProxy: params.alwaysProxy || localProcessing === "forced",
             localProcessing,

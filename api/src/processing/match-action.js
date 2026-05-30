@@ -19,6 +19,7 @@ export default function({
     convertGif,
     compress,
     requestIP,
+    proxyToUse,
     audioBitrate,
     alwaysProxy,
     localProcessing,
@@ -33,6 +34,7 @@ export default function({
                     createFilename(r.filenameAttributes, filenameStyle, isAudioOnly, isAudioMuted) : r.filename,
             fileMetadata: !disableMetadata ? r.fileMetadata : false,
             requestIP,
+            proxyToUse,
             originalRequest: r.originalRequest,
             subtitles: r.subtitles,
             cover: !disableMetadata ? r.cover : false,
@@ -104,6 +106,7 @@ export default function({
                 case "twitter":
                 case "snapchat":
                 case "bsky":
+                case "youtube":
                     params = { picker: r.picker };
                     break;
 
@@ -174,13 +177,18 @@ export default function({
 
                 case "vk":
                 case "tiktok":
-                    params = {
-                        type: r.subtitles ? "remux" : "proxy"
-                    };
+                    if (r.subtitles) {
+                        params = { type: "remux" };
+                    } else if (Array.isArray(r.urls)) {
+                        params = { type: "merge" };
+                    } else {
+                        params = { type: "proxy" };
+                    }
                     break;
 
                 case "ok":
                 case "newgrounds":
+                case "bsky":
                     params = { type: "proxy" };
                     break;
 
