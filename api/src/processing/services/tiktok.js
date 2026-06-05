@@ -72,6 +72,17 @@ export default async function(obj) {
         return { error: "fetch.empty" };
     }
 
+    // preview hints for link-embed crawlers (caption + author + dimensions)
+    const embedMeta = {
+        width: detail.video?.width,
+        height: detail.video?.height,
+        thumbnail: detail.video?.cover || detail.video?.originCover,
+        title: detail.desc || undefined,
+        author: detail.author?.uniqueId
+            ? `${detail.author.nickname || detail.author.uniqueId} (@${detail.author.uniqueId})`
+            : undefined,
+    };
+
     let video, videoFilename, audioFilename, audio, images,
         filenameBase = `tiktok_${detail.author?.uniqueId}_${postId}`,
         bestAudio; // will get defaulted to m4a later on in match-action
@@ -129,7 +140,8 @@ export default async function(obj) {
             subtitles,
             fileMetadata,
             filename: videoFilename,
-            headers: { cookie }
+            headers: { cookie },
+            meta: embedMeta,
         }
     }
 
@@ -166,7 +178,8 @@ export default async function(obj) {
             audioFilename: audioFilename,
             isAudioOnly: true,
             bestAudio,
-            headers: { cookie }
+            headers: { cookie },
+            meta: embedMeta,
         }
     }
 

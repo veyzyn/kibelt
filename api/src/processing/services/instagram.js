@@ -302,6 +302,11 @@ export default function instagram(obj) {
         const shortcodeMedia = data?.gql_data?.shortcode_media || data?.gql_data?.xdt_shortcode_media;
         const sidecar = shortcodeMedia?.edge_sidecar_to_children;
 
+        const igMeta = {
+            title: shortcodeMedia?.edge_media_to_caption?.edges?.[0]?.node?.text || undefined,
+            author: shortcodeMedia?.owner?.username ? `@${shortcodeMedia.owner.username}` : undefined,
+        };
+
         if (sidecar) {
             const picker = sidecar.edges.filter(e => e.node?.display_url)
                 .map((e, i) => {
@@ -345,7 +350,12 @@ export default function instagram(obj) {
             return {
                 urls: shortcodeMedia.video_url,
                 filename: `instagram_${id}.mp4`,
-                audioFilename: `instagram_${id}_audio`
+                audioFilename: `instagram_${id}_audio`,
+                meta: {
+                    ...igMeta,
+                    width: shortcodeMedia.dimensions?.width,
+                    height: shortcodeMedia.dimensions?.height,
+                },
             }
         }
 
@@ -354,12 +364,22 @@ export default function instagram(obj) {
                 urls: shortcodeMedia.display_url,
                 isPhoto: true,
                 filename: `instagram_${id}.jpg`,
+                meta: {
+                    ...igMeta,
+                    width: shortcodeMedia.dimensions?.width,
+                    height: shortcodeMedia.dimensions?.height,
+                },
             }
         }
     }
 
     function extractNewPost(data, id, alwaysProxy) {
         const carousel = data.carousel_media;
+
+        const igMeta = {
+            title: data.caption?.text || undefined,
+            author: data.user?.username ? `@${data.user.username}` : undefined,
+        };
         if (carousel) {
             const picker = carousel.filter(e => e?.image_versions2)
                 .map((e, i) => {
@@ -402,13 +422,16 @@ export default function instagram(obj) {
             return {
                 urls: video.url,
                 filename: `instagram_${id}.mp4`,
-                audioFilename: `instagram_${id}_audio`
+                audioFilename: `instagram_${id}_audio`,
+                meta: { ...igMeta, width: video.width, height: video.height },
             }
         } else if (data.image_versions2?.candidates) {
+            const image = data.image_versions2.candidates[0];
             return {
-                urls: data.image_versions2.candidates[0].url,
+                urls: image.url,
                 isPhoto: true,
                 filename: `instagram_${id}.jpg`,
+                meta: { ...igMeta, width: image.width, height: image.height },
             }
         }
     }
@@ -498,20 +521,28 @@ export default function instagram(obj) {
         const item = media.items.find(m => m.pk === id);
         if (!item) return { error: "fetch.empty" };
 
+        const igMeta = {
+            title: item.caption?.text || undefined,
+            author: item.user?.username ? `@${item.user.username}` : undefined,
+        };
+
         if (item.video_versions) {
             const video = item.video_versions.reduce((a, b) => a.width * a.height < b.width * b.height ? b : a)
             return {
                 urls: video.url,
                 filename: `instagram_${id}.mp4`,
-                audioFilename: `instagram_${id}_audio`
+                audioFilename: `instagram_${id}_audio`,
+                meta: { ...igMeta, width: video.width, height: video.height },
             }
         }
 
         if (item.image_versions2?.candidates) {
+            const image = item.image_versions2.candidates[0];
             return {
-                urls: item.image_versions2.candidates[0].url,
+                urls: image.url,
                 isPhoto: true,
                 filename: `instagram_${id}.jpg`,
+                meta: { ...igMeta, width: image.width, height: image.height },
             }
         }
 

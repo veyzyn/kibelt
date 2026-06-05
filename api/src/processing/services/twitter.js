@@ -52,6 +52,24 @@ function stripVideoURL(maybeUrl) {
     }
 }
 
+// drop the trailing t.co media link twitter appends to the tweet text
+const cleanTweetText = (text) =>
+    typeof text === "string" ? text.replace(/\s*https:\/\/t\.co\/\w+\s*$/, "").trim() : undefined;
+
+// preview dimensions for link-embed crawlers. videos carry an aspect ratio
+// rather than pixel dims, so scale it up to a sensible player size.
+function videoDimensions(mediaItem) {
+    const ar = mediaItem?.video_info?.aspect_ratio;
+    if (Array.isArray(ar) && ar.length === 2 && ar[0] > 0 && ar[1] > 0) {
+        const scale = 1280 / Math.max(ar[0], ar[1]);
+        return { width: Math.round(ar[0] * scale), height: Math.round(ar[1] * scale) };
+    }
+    if (mediaItem?.original_info?.width) {
+        return { width: mediaItem.original_info.width, height: mediaItem.original_info.height };
+    }
+    return {};
+}
+
 let _cachedToken;
 const getGuestToken = async (dispatcher, forceReload = false) => {
     if (_cachedToken && !forceReload) {
@@ -159,7 +177,7 @@ const parseCard = (cardOuter) => {
     return [card.media_entities[mediaId]];
 };
 
-const extractGraphqlMedia = async (thread, dispatcher, id, guestToken, cookie) => {
+const extractGraphqlMedia = async (thread, dispatcher, id, guestToken, cookie, out) => {
     const addInsn = thread?.data?.threaded_conversation_with_injections_v2?.instructions?.find(
         insn => insn.type === 'TimelineAddEntries'
     );
@@ -184,7 +202,7 @@ const extractGraphqlMedia = async (thread, dispatcher, id, guestToken, cookie) =
             }
 
             const tweet = await requestTweet(dispatcher, id, guestToken, cookie).then(t => t.json());
-            return extractGraphqlMedia(tweet, dispatcher, id, guestToken);
+            return extractGraphqlMedia(tweet, dispatcher, id, guestToken, undefined, out);
         }
     }
 
@@ -192,12 +210,23 @@ const extractGraphqlMedia = async (thread, dispatcher, id, guestToken, cookie) =
         return { error: "content.post.unavailable" }
     }
 
+    const core = (tweetTypename === "TweetWithVisibilityResults" ? tweetResult.tweet : tweetResult);
     let baseTweet = tweetResult.legacy,
         repostedTweet = baseTweet?.retweeted_status_result?.result.legacy.extended_entities;
 
     if (tweetTypename === "TweetWithVisibilityResults") {
         baseTweet = tweetResult.tweet.legacy;
         repostedTweet = baseTweet?.retweeted_status_result?.result.tweet.legacy.extended_entities;
+    }
+
+    if (out) {
+        const user = core?.core?.user_results?.result?.legacy;
+        out.meta = {
+            title: cleanTweetText(baseTweet?.full_text),
+            author: user?.screen_name
+                ? `${user.name || user.screen_name} (@${user.screen_name})`
+                : undefined,
+        };
     }
 
     if (tweetResult.card?.legacy?.binding_values?.length) {
@@ -224,9 +253,10 @@ export default async function({ id, index, toGif, dispatcher, alwaysProxy, subti
     }
 
     let media;
+    const embedMeta = {};
     try {
         tweet = await tweet.json();
-        media = await extractGraphqlMedia(tweet, dispatcher, id, guestToken, cookie);
+        media = await extractGraphqlMedia(tweet, dispatcher, id, guestToken, cookie, embedMeta);
     } catch {}
 
     // if graphql requests fail, then resort to tweet embed api
@@ -238,10 +268,21 @@ export default async function({ id, index, toGif, dispatcher, alwaysProxy, subti
             if (tweet?.card) {
                 media = parseCard(tweet.card);
             }
+
+            if (tweet?.text || tweet?.user) {
+                embedMeta.meta = {
+                    title: cleanTweetText(tweet.text),
+                    author: tweet.user?.screen_name
+                        ? `${tweet.user.name || tweet.user.screen_name} (@${tweet.user.screen_name})`
+                        : undefined,
+                };
+            }
         } catch {}
 
         media = tweet?.mediaDetails ?? media;
     }
+
+    const tweetMeta = embedMeta.meta || {};
 
     if (!media || 'error' in media) {
         return { error: media?.error || "fetch.empty" };
@@ -297,7 +338,12 @@ export default async function({ id, index, toGif, dispatcher, alwaysProxy, subti
                     type: "proxy",
                     isPhoto: true,
                     filename: `twitter_${id}.${getFileExt(mediaItem.media_url_https)}`,
-                    urls: `${mediaItem.media_url_https}?name=4096x4096`
+                    urls: `${mediaItem.media_url_https}?name=4096x4096`,
+                    meta: {
+                        ...tweetMeta,
+                        width: mediaItem.original_info?.width,
+                        height: mediaItem.original_info?.height,
+                    },
                 }
             }
 
@@ -322,6 +368,11 @@ export default async function({ id, index, toGif, dispatcher, alwaysProxy, subti
                 isGif: mediaItem.type === "animated_gif",
                 subtitles,
                 fileMetadata,
+                meta: {
+                    ...tweetMeta,
+                    ...videoDimensions(mediaItem),
+                    thumbnail: mediaItem.media_url_https,
+                },
             }
         default:
             const proxyThumb = (url, i) =>

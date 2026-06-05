@@ -39,6 +39,9 @@ export default function({
             subtitles: r.subtitles,
             cover: !disableMetadata ? r.cover : false,
             cropCover: !disableMetadata ? r.cropCover : false,
+            // optional preview hints (dimensions, poster, caption, author) for
+            // link-embed crawlers; see processing/embed.js
+            meta: r.meta,
         },
         params = {};
 

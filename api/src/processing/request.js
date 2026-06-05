@@ -41,6 +41,7 @@ export function createResponse(responseType, responseData) {
                     url: responseData?.url,
                     filename: responseData?.filename
                 }
+                if (responseData?.meta) response.meta = responseData.meta;
                 break;
 
             case "tunnel":
@@ -48,6 +49,7 @@ export function createResponse(responseType, responseData) {
                     url: createStream(responseData),
                     filename: responseData?.filename
                 }
+                if (responseData?.meta) response.meta = responseData.meta;
                 break;
 
             case "local-processing":
@@ -94,6 +96,7 @@ export function createResponse(responseType, responseData) {
                     audio: responseData?.url,
                     audioFilename: responseData?.filename
                 }
+                if (responseData?.meta) response.meta = responseData.meta;
                 break;
 
             case "critical":
