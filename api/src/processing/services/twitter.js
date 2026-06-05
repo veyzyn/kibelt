@@ -220,12 +220,14 @@ const extractGraphqlMedia = async (thread, dispatcher, id, guestToken, cookie, o
     }
 
     if (out) {
-        const user = core?.core?.user_results?.result?.legacy;
+        // twitter moved name/screen_name from user_results.result.legacy into
+        // a .core object; accept either location.
+        const userResult = core?.core?.user_results?.result;
+        const name = userResult?.core?.name || userResult?.legacy?.name;
+        const handle = userResult?.core?.screen_name || userResult?.legacy?.screen_name;
         out.meta = {
             title: cleanTweetText(baseTweet?.full_text),
-            author: user?.screen_name
-                ? `${user.name || user.screen_name} (@${user.screen_name})`
-                : undefined,
+            author: handle ? `${name || handle} (@${handle})` : undefined,
         };
     }
 
