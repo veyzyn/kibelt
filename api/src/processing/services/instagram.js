@@ -345,11 +345,7 @@ export default function instagram(obj) {
             return {
                 urls: shortcodeMedia.video_url,
                 filename: `instagram_${id}.mp4`,
-                audioFilename: `instagram_${id}_audio`,
-                meta: {
-                    width: shortcodeMedia.dimensions?.width,
-                    height: shortcodeMedia.dimensions?.height,
-                },
+                audioFilename: `instagram_${id}_audio`
             }
         }
 
@@ -358,10 +354,6 @@ export default function instagram(obj) {
                 urls: shortcodeMedia.display_url,
                 isPhoto: true,
                 filename: `instagram_${id}.jpg`,
-                meta: {
-                    width: shortcodeMedia.dimensions?.width,
-                    height: shortcodeMedia.dimensions?.height,
-                },
             }
         }
     }
@@ -410,16 +402,13 @@ export default function instagram(obj) {
             return {
                 urls: video.url,
                 filename: `instagram_${id}.mp4`,
-                audioFilename: `instagram_${id}_audio`,
-                meta: { width: video.width, height: video.height },
+                audioFilename: `instagram_${id}_audio`
             }
         } else if (data.image_versions2?.candidates) {
-            const image = data.image_versions2.candidates[0];
             return {
-                urls: image.url,
+                urls: data.image_versions2.candidates[0].url,
                 isPhoto: true,
                 filename: `instagram_${id}.jpg`,
-                meta: { width: image.width, height: image.height },
             }
         }
     }
@@ -514,18 +503,15 @@ export default function instagram(obj) {
             return {
                 urls: video.url,
                 filename: `instagram_${id}.mp4`,
-                audioFilename: `instagram_${id}_audio`,
-                meta: { width: video.width, height: video.height },
+                audioFilename: `instagram_${id}_audio`
             }
         }
 
         if (item.image_versions2?.candidates) {
-            const image = item.image_versions2.candidates[0];
             return {
-                urls: image.url,
+                urls: item.image_versions2.candidates[0].url,
                 isPhoto: true,
                 filename: `instagram_${id}.jpg`,
-                meta: { width: image.width, height: image.height },
             }
         }
 

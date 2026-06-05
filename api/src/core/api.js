@@ -19,7 +19,7 @@ import { verifyTurnstileToken } from "../security/turnstile.js";
 import { friendlyServiceName } from "../processing/service-alias.js";
 import { verifyStream } from "../stream/manage.js";
 import { createResponse, normalizeRequest, getIP } from "../processing/request.js";
-import { isEmbedCrawler, renderResultEmbed } from "../processing/embed.js";
+import { isEmbedCrawler, pickMediaUrl } from "../processing/embed.js";
 import { setupTunnelHandler } from "./itunnel.js";
 
 import * as APIKeys from "../security/api-keys.js";
@@ -407,7 +407,7 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
                 params: normalizedRequest,
                 authType: "none",
             });
-            return { status, body, link: normalizedRequest.url.toString() };
+            return { status, body };
         } catch {
             return { error: "error.api.generic" };
         }
@@ -425,8 +425,8 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
             req.originalUrl.indexOf(marker) + marker.length,
         );
 
-        // Link-preview crawlers (Discord, Telegram, …) get an OpenGraph page
-        // that embeds the media inline instead of a redirect to the file.
+        // Link-preview crawlers (Discord, Telegram, …) get sent straight to the
+        // proxied media so it renders as bare inline media (no embed card).
         const wantsEmbed = isEmbedCrawler(req.header('user-agent'));
 
         const r = await resolveLinkTail(tail, req, { forceProxy: wantsEmbed });
@@ -435,12 +435,11 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
         }
 
         if (wantsEmbed) {
-            const html = renderResultEmbed(r.body, r.link);
-            if (html) {
-                res.type('html');
-                return res.status(200).send(html);
+            const mediaUrl = pickMediaUrl(r.body);
+            if (mediaUrl) {
+                return res.redirect(mediaUrl);
             }
-            // nothing embeddable (picker miss, etc.) — fall back to normal flow
+            // nothing to point at (picker miss, etc.) — fall back to normal flow
         }
 
         if (r.body?.status === "tunnel" || r.body?.status === "redirect") {
@@ -465,10 +464,9 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
         }
 
         if (wantsEmbed) {
-            const html = renderResultEmbed(r.body, r.link);
-            if (html) {
-                res.type('html');
-                return res.status(200).send(html);
+            const mediaUrl = pickMediaUrl(r.body);
+            if (mediaUrl) {
+                return res.redirect(mediaUrl);
             }
         }
 
