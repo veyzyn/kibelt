@@ -19,7 +19,7 @@ import { verifyTurnstileToken } from "../security/turnstile.js";
 import { friendlyServiceName } from "../processing/service-alias.js";
 import { verifyStream } from "../stream/manage.js";
 import { createResponse, normalizeRequest, getIP } from "../processing/request.js";
-import { isEmbedCrawler, pickMediaUrl } from "../processing/embed.js";
+import { isEmbedCrawler, inlineMediaUrl } from "../processing/embed.js";
 import { setupTunnelHandler } from "./itunnel.js";
 
 import * as APIKeys from "../security/api-keys.js";
@@ -302,7 +302,11 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
         ...corsConfig,
     }));
 
-    app.get('/tunnel', apiTunnelLimiter, async (req, res) => {
+    // Matches `/tunnel` and `/tunnel/<anything>`. The optional path suffix lets
+    // us hand crawlers a URL ending in `.mp4`/`.jpg` (see the embed redirect) so
+    // they treat it as a direct media file; the handler only reads query params,
+    // and the stream signature doesn't cover the path, so the suffix is inert.
+    app.get(/^\/tunnel(?:\/|$)/, apiTunnelLimiter, async (req, res) => {
         const id = String(req.query.id);
         const exp = String(req.query.exp);
         const sig = String(req.query.sig);
@@ -435,7 +439,7 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
         }
 
         if (wantsEmbed) {
-            const mediaUrl = pickMediaUrl(r.body);
+            const mediaUrl = inlineMediaUrl(r.body);
             if (mediaUrl) {
                 return res.redirect(mediaUrl);
             }
@@ -464,7 +468,7 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
         }
 
         if (wantsEmbed) {
-            const mediaUrl = pickMediaUrl(r.body);
+            const mediaUrl = inlineMediaUrl(r.body);
             if (mediaUrl) {
                 return res.redirect(mediaUrl);
             }
