@@ -52,6 +52,23 @@ function stripVideoURL(maybeUrl) {
     }
 }
 
+// preview dimensions for link-embed crawlers. videos carry an aspect ratio
+// rather than pixel dims, so scale it up to a sensible player size.
+function videoDimensions(mediaItem) {
+    const ar = mediaItem?.video_info?.aspect_ratio;
+    if (Array.isArray(ar) && ar.length === 2 && ar[0] > 0 && ar[1] > 0) {
+        const scale = 1280 / Math.max(ar[0], ar[1]);
+        return { width: Math.round(ar[0] * scale), height: Math.round(ar[1] * scale) };
+    }
+    if (mediaItem?.original_info?.width) {
+        return {
+            width: mediaItem.original_info.width,
+            height: mediaItem.original_info.height,
+        };
+    }
+    return {};
+}
+
 let _cachedToken;
 const getGuestToken = async (dispatcher, forceReload = false) => {
     if (_cachedToken && !forceReload) {
@@ -297,7 +314,11 @@ export default async function({ id, index, toGif, dispatcher, alwaysProxy, subti
                     type: "proxy",
                     isPhoto: true,
                     filename: `twitter_${id}.${getFileExt(mediaItem.media_url_https)}`,
-                    urls: `${mediaItem.media_url_https}?name=4096x4096`
+                    urls: `${mediaItem.media_url_https}?name=4096x4096`,
+                    meta: {
+                        width: mediaItem.original_info?.width,
+                        height: mediaItem.original_info?.height,
+                    },
                 }
             }
 
@@ -322,6 +343,10 @@ export default async function({ id, index, toGif, dispatcher, alwaysProxy, subti
                 isGif: mediaItem.type === "animated_gif",
                 subtitles,
                 fileMetadata,
+                meta: {
+                    ...videoDimensions(mediaItem),
+                    thumbnail: mediaItem.media_url_https,
+                },
             }
         default:
             const proxyThumb = (url, i) =>

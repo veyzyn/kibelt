@@ -19,6 +19,7 @@ import { verifyTurnstileToken } from "../security/turnstile.js";
 import { friendlyServiceName } from "../processing/service-alias.js";
 import { verifyStream } from "../stream/manage.js";
 import { createResponse, normalizeRequest, getIP } from "../processing/request.js";
+import { isEmbedCrawler, renderResultEmbed } from "../processing/embed.js";
 import { setupTunnelHandler } from "./itunnel.js";
 
 import * as APIKeys from "../security/api-keys.js";
@@ -345,7 +346,7 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
     // Shared resolver for the keyless GET shortcuts. Reconstructs the link from
     // a raw path tail, runs the YouTube guard + the normal processing pipeline,
     // and returns either an { error } code or the { status, body } match result.
-    const resolveLinkTail = async (tail, req) => {
+    const resolveLinkTail = async (tail, req, { forceProxy = false } = {}) => {
         if (!tail) {
             return { error: "error.api.link.missing" };
         }
@@ -375,7 +376,13 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
 
         link = normalizeHttpzScheme(link);
 
-        const { success, data: normalizedRequest } = await normalizeRequest({ url: link, compress });
+        const { success, data: normalizedRequest } = await normalizeRequest({
+            url: link,
+            compress,
+            // crawler embeds force-proxy the media so it tunnels through us with
+            // the right content-type (service CDNs often block hotlinking).
+            alwaysProxy: forceProxy,
+        });
         if (!success) {
             return { error: "error.api.link.invalid" };
         }
@@ -400,7 +407,7 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
                 params: normalizedRequest,
                 authType: "none",
             });
-            return { status, body };
+            return { status, body, link: normalizedRequest.url.toString() };
         } catch {
             return { error: "error.api.generic" };
         }
@@ -418,9 +425,22 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
             req.originalUrl.indexOf(marker) + marker.length,
         );
 
-        const r = await resolveLinkTail(tail, req);
+        // Link-preview crawlers (Discord, Telegram, …) get an OpenGraph page
+        // that embeds the media inline instead of a redirect to the file.
+        const wantsEmbed = isEmbedCrawler(req.header('user-agent'));
+
+        const r = await resolveLinkTail(tail, req, { forceProxy: wantsEmbed });
         if (r.error) {
             return fail(res, r.error, r.context);
+        }
+
+        if (wantsEmbed) {
+            const html = renderResultEmbed(r.body, r.link);
+            if (html) {
+                res.type('html');
+                return res.status(200).send(html);
+            }
+            // nothing embeddable (picker miss, etc.) — fall back to normal flow
         }
 
         if (r.body?.status === "tunnel" || r.body?.status === "redirect") {
@@ -437,9 +457,19 @@ export const runAPI = async (express, app, __dirname, isPrimary = true) => {
     app.get(/^\/(?:https?|httpz)(?::\/\/|%3a)/i, apiLimiter, async (req, res) => {
         const tail = req.originalUrl.replace(/^\//, "");
 
-        const r = await resolveLinkTail(tail, req);
+        const wantsEmbed = isEmbedCrawler(req.header('user-agent'));
+
+        const r = await resolveLinkTail(tail, req, { forceProxy: wantsEmbed });
         if (r.error) {
             return fail(res, r.error, r.context);
+        }
+
+        if (wantsEmbed) {
+            const html = renderResultEmbed(r.body, r.link);
+            if (html) {
+                res.type('html');
+                return res.status(200).send(html);
+            }
         }
 
         return res.status(r.status).json(r.body);
